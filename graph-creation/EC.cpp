@@ -40,18 +40,10 @@ EdgeCentric createGraphFromFile(const std::string& path){
 ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const int n){
     ExtendedEdgeCentric g ;
     g.out_degree.resize(n,0);
-    std::ifstream file(path);
-    std::string line ;
-    std::getline(file,line);
-    std::cout << line << std::endl ;
-    std::getline(file,line);
-    std::cout << line << std::endl ;
-    std::getline(file,line);
-    std::cout << line << std::endl ;
-    std::getline(file,line);
-    std::cout << line << std::endl ;
+    std::ifstream edge_list(path+".bin");
     int a,b ;
-    file >> a >> b ;
+    edge_list.read((char *)&a,sizeof(int) );
+    edge_list.read((char *)&b,sizeof(int) );
     // TODO : consider pushing directly a binary
     // TODO : consider performance consequences of reallocating
     g.src.push_back(a);
@@ -59,10 +51,15 @@ ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const in
     g.count.push_back(1);
     g.dst.push_back(b);
     g.out_degree[a]++;
-    while (file >> a >> b){
-        // std::cout << a << " " << b << '\n' ;
+
+    long nb_edges ;
+    std::ifstream conf(path+".conf");
+    conf >> nb_edges ;
+    for (int i = 1; i < nb_edges; ++i) {
         // TODO : store prev variable better than accessing last element of the vector each time
         // TODO : collect metadata of the graph in the pass and store them somewhere
+        edge_list.read((char *)&a,sizeof(int) );
+        edge_list.read((char *)&b,sizeof(int) );
         g.out_degree[a]++;
         if ( g.src.back()!=a )
         {
