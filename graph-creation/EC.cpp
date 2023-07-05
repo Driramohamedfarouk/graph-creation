@@ -3,6 +3,7 @@
 //
 #include "EC.h"
 #include <fstream>
+#include <chrono>
 #include "../utils/util.h"
 
 
@@ -36,33 +37,40 @@ EdgeCentric createGraphFromFile(const std::string& path){
     return g ;
 }
 
-
+/*
+ * Conversion to binary should be done before calling this method.
+ * The method creates an extended version of EC that contains
+ * out_degree edges, witch is suited for computing PageRank.
+ * */
 ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const int n){
+    auto start = std::chrono::high_resolution_clock::now();
     ExtendedEdgeCentric g ;
     g.out_degree.resize(n,0);
     std::ifstream edge_list(path+".bin");
-    int a,b ;
+    int a,b , prev ;
     edge_list.read((char *)&a,sizeof(int) );
     edge_list.read((char *)&b,sizeof(int) );
-    // TODO : consider pushing directly a binary
     // TODO : consider performance consequences of reallocating
     g.src.push_back(a);
+    prev = a ;
     g.count.push_back(0);
     g.count.push_back(1);
-    g.dst.push_back(b);
     g.out_degree[a]++;
 
     long nb_edges ;
     std::ifstream conf(path+".conf");
     conf >> nb_edges ;
+    g.dst.resize(nb_edges);
+    g.dst[0] = b ;
     for (int i = 1; i < nb_edges; ++i) {
         // TODO : store prev variable better than accessing last element of the vector each time
         // TODO : collect metadata of the graph in the pass and store them somewhere
         edge_list.read((char *)&a,sizeof(int) );
         edge_list.read((char *)&b,sizeof(int) );
         g.out_degree[a]++;
-        if ( g.src.back()!=a )
+        if ( prev!=a )
         {
+            prev = a ; 
             g.src.push_back(a);
             g.count.push_back(g.count.back()+1);
         }
@@ -71,9 +79,12 @@ ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const in
             g.count.back()++;
         }
 
-        g.dst.push_back(b);
+        g.dst[i] = b ;
     }
     g.count.push_back(g.count.back()+1);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
+    std::cout << "creating EC took : "  << duration.count() << '\n' ;
     return g ;
 }
 

@@ -6,22 +6,21 @@
 #include "PageRank.h"
 #include <cstring>
 #include <fstream>
+#include <chrono>
 
 void parallelPageRank(const std::string& path,const int n,const int nb_iteration){
     // create edge centric format and an array of size n containing out_deg
     ExtendedEdgeCentric g ;
     g = createGraphFromFilePageRank(path,n);
 
-    //print_EEC(g);
-    //exit(0);
     // allocate two arrays of size n
     // one contains PR for previous iteration and one contains PR for current iteration
     std::cout << "loaded the graph in memory " << '\n' ;
+    auto start = std::chrono::high_resolution_clock::now();
     double* arr1;
     arr1 = static_cast<double *>(malloc(n * sizeof(double)));
-    // passer l'addresse de PR
-    // calloc or memset to all zeros
-    //exit(0) ;
+
+
     double* arr2;
     arr2 = static_cast<double *>(malloc(n * sizeof(double)));
 
@@ -30,9 +29,8 @@ void parallelPageRank(const std::string& path,const int n,const int nb_iteration
     double* PR = arr2 ;
     double* temp ;
 
+    // damping factor of pagerank
     const float d =0.85;
-
-    //exit(0);
 
     memset(previousPR,1.0f,n*sizeof(double ));
 
@@ -66,13 +64,6 @@ void parallelPageRank(const std::string& path,const int n,const int nb_iteration
             PR[j] = d*PR[j] + (1 -d)/(float)n ;
         }
 
-       /* std::cout << '\n' ;
-        for (int j = 0; j < n; ++j) {
-            std::cout << PR[j] << " " ;
-        }
-        std::cout << '\n' ;*/
-
-
         // previous = pageRank && reinitialize pageRank
         // pointer to previous now points to PR
         // memset PR to all zeros
@@ -80,6 +71,9 @@ void parallelPageRank(const std::string& path,const int n,const int nb_iteration
         previousPR = PR ;
         PR  =  temp ;
     }
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
+    std::cout << "calculating pageRank took : " << duration.count() << '\n' ;
     std::ofstream out("/home/farouk/CLionProjects/untitled/PageRankOutput.txt");
     for (int j = 0; j < n; ++j) {
         out << PR[j]  ;
