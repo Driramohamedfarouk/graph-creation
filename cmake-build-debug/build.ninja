@@ -11,7 +11,7 @@
 # =============================================================================
 
 # =============================================================================
-# Project: untitled
+# Project: graph_processing_framework
 # Configurations: Debug
 # =============================================================================
 
@@ -41,53 +41,65 @@ include CMakeFiles/rules.ninja
 
 cmake_ninja_workdir = /home/farouk/CLionProjects/untitled/cmake-build-debug/
 # =============================================================================
-# Object build statements for EXECUTABLE target untitled
+# Object build statements for EXECUTABLE target gpf
 
 
 #############################################
-# Order-only phony target for untitled
+# Order-only phony target for gpf
 
-build cmake_object_order_depends_target_untitled: phony || CMakeFiles/untitled.dir
+build cmake_object_order_depends_target_gpf: phony || CMakeFiles/gpf.dir
 
-build CMakeFiles/untitled.dir/main.cpp.o: CXX_COMPILER__untitled_Debug /home/farouk/CLionProjects/untitled/main.cpp || cmake_object_order_depends_target_untitled
-  DEP_FILE = CMakeFiles/untitled.dir/main.cpp.o.d
+build CMakeFiles/gpf.dir/main.cpp.o: CXX_COMPILER__gpf_Debug /home/farouk/CLionProjects/untitled/main.cpp || cmake_object_order_depends_target_gpf
+  DEP_FILE = CMakeFiles/gpf.dir/main.cpp.o.d
   FLAGS = -fopenmp -g -fdiagnostics-color=always -std=gnu++1z
-  OBJECT_DIR = CMakeFiles/untitled.dir
-  OBJECT_FILE_DIR = CMakeFiles/untitled.dir
+  OBJECT_DIR = CMakeFiles/gpf.dir
+  OBJECT_FILE_DIR = CMakeFiles/gpf.dir
 
-build CMakeFiles/untitled.dir/EC.cpp.o: CXX_COMPILER__untitled_Debug /home/farouk/CLionProjects/untitled/EC.cpp || cmake_object_order_depends_target_untitled
-  DEP_FILE = CMakeFiles/untitled.dir/EC.cpp.o.d
+build CMakeFiles/gpf.dir/graph-creation/EC.cpp.o: CXX_COMPILER__gpf_Debug /home/farouk/CLionProjects/untitled/graph-creation/EC.cpp || cmake_object_order_depends_target_gpf
+  DEP_FILE = CMakeFiles/gpf.dir/graph-creation/EC.cpp.o.d
   FLAGS = -fopenmp -g -fdiagnostics-color=always -std=gnu++1z
-  OBJECT_DIR = CMakeFiles/untitled.dir
-  OBJECT_FILE_DIR = CMakeFiles/untitled.dir
+  OBJECT_DIR = CMakeFiles/gpf.dir
+  OBJECT_FILE_DIR = CMakeFiles/gpf.dir/graph-creation
 
-build CMakeFiles/untitled.dir/PageRank.cpp.o: CXX_COMPILER__untitled_Debug /home/farouk/CLionProjects/untitled/PageRank.cpp || cmake_object_order_depends_target_untitled
-  DEP_FILE = CMakeFiles/untitled.dir/PageRank.cpp.o.d
+build CMakeFiles/gpf.dir/utils/util.cpp.o: CXX_COMPILER__gpf_Debug /home/farouk/CLionProjects/untitled/utils/util.cpp || cmake_object_order_depends_target_gpf
+  DEP_FILE = CMakeFiles/gpf.dir/utils/util.cpp.o.d
   FLAGS = -fopenmp -g -fdiagnostics-color=always -std=gnu++1z
-  OBJECT_DIR = CMakeFiles/untitled.dir
-  OBJECT_FILE_DIR = CMakeFiles/untitled.dir
+  OBJECT_DIR = CMakeFiles/gpf.dir
+  OBJECT_FILE_DIR = CMakeFiles/gpf.dir/utils
 
-build CMakeFiles/untitled.dir/util.cpp.o: CXX_COMPILER__untitled_Debug /home/farouk/CLionProjects/untitled/util.cpp || cmake_object_order_depends_target_untitled
-  DEP_FILE = CMakeFiles/untitled.dir/util.cpp.o.d
+build CMakeFiles/gpf.dir/algorithms/PageRank.cpp.o: CXX_COMPILER__gpf_Debug /home/farouk/CLionProjects/untitled/algorithms/PageRank.cpp || cmake_object_order_depends_target_gpf
+  DEP_FILE = CMakeFiles/gpf.dir/algorithms/PageRank.cpp.o.d
   FLAGS = -fopenmp -g -fdiagnostics-color=always -std=gnu++1z
-  OBJECT_DIR = CMakeFiles/untitled.dir
-  OBJECT_FILE_DIR = CMakeFiles/untitled.dir
+  OBJECT_DIR = CMakeFiles/gpf.dir
+  OBJECT_FILE_DIR = CMakeFiles/gpf.dir/algorithms
+
+build CMakeFiles/gpf.dir/graph-creation/parallelEC.cpp.o: CXX_COMPILER__gpf_Debug /home/farouk/CLionProjects/untitled/graph-creation/parallelEC.cpp || cmake_object_order_depends_target_gpf
+  DEP_FILE = CMakeFiles/gpf.dir/graph-creation/parallelEC.cpp.o.d
+  FLAGS = -fopenmp -g -fdiagnostics-color=always -std=gnu++1z
+  OBJECT_DIR = CMakeFiles/gpf.dir
+  OBJECT_FILE_DIR = CMakeFiles/gpf.dir/graph-creation
+
+build CMakeFiles/gpf.dir/utils/ConvertToBinary.cpp.o: CXX_COMPILER__gpf_Debug /home/farouk/CLionProjects/untitled/utils/ConvertToBinary.cpp || cmake_object_order_depends_target_gpf
+  DEP_FILE = CMakeFiles/gpf.dir/utils/ConvertToBinary.cpp.o.d
+  FLAGS = -fopenmp -g -fdiagnostics-color=always -std=gnu++1z
+  OBJECT_DIR = CMakeFiles/gpf.dir
+  OBJECT_FILE_DIR = CMakeFiles/gpf.dir/utils
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target untitled
+# Link build statements for EXECUTABLE target gpf
 
 
 #############################################
-# Link the executable untitled
+# Link the executable gpf
 
-build untitled: CXX_EXECUTABLE_LINKER__untitled_Debug CMakeFiles/untitled.dir/main.cpp.o CMakeFiles/untitled.dir/EC.cpp.o CMakeFiles/untitled.dir/PageRank.cpp.o CMakeFiles/untitled.dir/util.cpp.o
+build gpf: CXX_EXECUTABLE_LINKER__gpf_Debug CMakeFiles/gpf.dir/main.cpp.o CMakeFiles/gpf.dir/graph-creation/EC.cpp.o CMakeFiles/gpf.dir/utils/util.cpp.o CMakeFiles/gpf.dir/algorithms/PageRank.cpp.o CMakeFiles/gpf.dir/graph-creation/parallelEC.cpp.o CMakeFiles/gpf.dir/utils/ConvertToBinary.cpp.o
   FLAGS = -fopenmp -g
-  OBJECT_DIR = CMakeFiles/untitled.dir
+  OBJECT_DIR = CMakeFiles/gpf.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_FILE = untitled
-  TARGET_PDB = untitled.dbg
+  TARGET_FILE = gpf
+  TARGET_PDB = gpf.dbg
 
 
 #############################################
@@ -123,7 +135,7 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 #############################################
 # Folder: /home/farouk/CLionProjects/untitled/cmake-build-debug
 
-build all: phony untitled
+build all: phony gpf
 
 # =============================================================================
 # Built-in targets

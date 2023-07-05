@@ -27,7 +27,7 @@
 					[
 						0
 					],
-					"name" : "untitled",
+					"name" : "graph_processing_framework",
 					"targetIndexes" : 
 					[
 						0
@@ -38,9 +38,9 @@
 			[
 				{
 					"directoryIndex" : 0,
-					"id" : "untitled::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-untitled-Debug-04a38f0b251d2e2e3758.json",
-					"name" : "untitled",
+					"id" : "gpf::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-gpf-Debug-68d911a8457208f90293.json",
+					"name" : "gpf",
 					"projectIndex" : 0
 				}
 			]

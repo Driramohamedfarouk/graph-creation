@@ -6,7 +6,7 @@
 #define UNTITLED_EC_H
 #include <iostream>
 #include <vector>
-#include "util.h"
+#include "../utils/util.h"
 
 // add nb of edges and vertices to the struct
 // change values to &

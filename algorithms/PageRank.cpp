@@ -2,7 +2,7 @@
 // Created by farouk on 30/06/23.
 //
 #include <iostream>
-#include "EC.h"
+#include "../graph-creation/EC.h"
 #include "PageRank.h"
 #include <cstring>
 #include <fstream>

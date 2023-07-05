@@ -1,10 +1,9 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
-#include <chrono>
-#include "EC.h"
-#include "util.h"
-#include "PageRank.h"
+#include "utils/util.h"
+#include "algorithms/PageRank.h"
+#include "utils/ConvertToBinary.h"
 
 void createGraphAndBinaryFromFile(const std::string& path,const std::string& out_path){
     std::vector<int> src;
@@ -92,29 +91,8 @@ void createGraphInParallelFromFile(const std::string& path){
 }
 
 
-void openAndSeekEnd(const std::string& path){
-    std::ifstream file ;
-    file.open(path);
-    auto start = std::chrono::high_resolution_clock::now();
-    file.seekg(20000,std::ios::beg);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
-
-    std::cout << duration.count() << '\n' ;
-}
-
-
-
 int main() {
-//
-//    ExtendedEdgeCentric g = createGraphFromFilePageRank("/home/farouk/CLionProjects/untitled/el.txt",9) ;
-//
-
-
-    //openAndSeekEnd("/home/farouk/CLionProjects/untitled/soc-LiveJournal1.txt") ;
-
-
-    parallelPageRank("/home/farouk/CLionProjects/untitled/soc-LiveJournal1.txt",4847571,10) ;
-
+    parallelPageRank("/home/farouk/CLionProjects/untitled/inputs/soc-LiveJournal1.txt",4847571,10) ;
+    //convertToBinary("/home/farouk/CLionProjects/untitled/inputs/soc-LiveJournal1.txt");
     return 0;
 }

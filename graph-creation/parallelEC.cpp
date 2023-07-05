@@ -13,27 +13,6 @@ struct EdgeCentric{
 };
 
 
-void print_array(const std::vector<int>& v){
-    for(int i : v) {
-        std::cout << i << "  " ;
-    }
-    std::cout<< '\n' ;
-}
-
-
-
-void convertToBinary(const std::string& path){
-    std::ifstream  el(path);
-    std::ofstream binary_file(path+".bin", std::ios::out|std::ios::binary);
-    int a,b ;
-
-    while (el >> a >> b ){
-        binary_file.write((const char *)&a,sizeof(int));
-        binary_file.write((const char *)&b,sizeof(int));
-    }
-}
-
-
 void parallelGraphCreation(const std::string& path,const int nb_edges) {
     EdgeCentric graphs[8];
     auto step = nb_edges / 8;
@@ -72,15 +51,11 @@ void parallelGraphCreation(const std::string& path,const int nb_edges) {
          * merge step : allocate a fixed sized array as the sum of all arrays
          * memcpy() content of each vector to the array and free the memory used by the vector
          * */
+        /*
         #pragma omp critical
         {
         std::cout << "count " << thread_id <<  ": \n";
         print_array(graphs[thread_id].dst);
-        };
+        };*/
 }
-}
-int main() {
-    std::cout << "hello " << '\n' ;
-    convertToBinary("/home/farouk/CLionProjects/untitled/el.txt");
-    parallelGraphCreation("/home/farouk/CLionProjects/untitled/el.txt.bin",24);
 }

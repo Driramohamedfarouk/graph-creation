@@ -3,7 +3,7 @@
 //
 #include "EC.h"
 #include <fstream>
-#include "util.h"
+#include "../utils/util.h"
 
 
 EdgeCentric createGraphFromFile(const std::string& path){
