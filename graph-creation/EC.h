@@ -16,7 +16,11 @@ struct EdgeCentric{
     std::vector<int> dst;
 };
 
-
+/*
+ * this is an extended form of EdgeCentric specific for page rank
+ * the count become accumulated offset
+ * and out degree is calculated
+ * */
 struct ExtendedEdgeCentric{
     std::vector<int> src;
     std::vector<int> count;
@@ -31,6 +35,8 @@ struct ExtendedEdgeCentric{
 EdgeCentric createGraphFromFile(const std::string& path);
 
 ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const int n);
+
+EdgeCentric parallelGraphCreation(const std::string& path);
 
 void print_EC(EdgeCentric g);
 

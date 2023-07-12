@@ -47,7 +47,7 @@ void parallelPageRank(const std::string& path,const int n,const int nb_iteration
         // partition the source array
         // the performance of parallel pageRank depends on the partitioning of edges
         // for each source add the value of previous[source] to count[source] next destinations
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,100)
         for (int j = 0; j < g.src.size() ; ++j) {
             // internal loop should not be done in parallel
             // too much random access here

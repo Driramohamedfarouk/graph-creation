@@ -4,16 +4,20 @@
 #include "EC.h"
 #include <fstream>
 #include <chrono>
+#include <sstream>
 #include "../utils/util.h"
 
 
 EdgeCentric createGraphFromFile(const std::string& path){
     EdgeCentric g ;
     std::ifstream file(path);
+
+    std::string line ;
+    while(std::getline(file,line) && line[0]=='#');
     int a,b ;
-    file >> a >> b ;
+    std::istringstream iss(line);
+    iss >> a >> b  ;
     std::cout << a << " " << b << '\n' ;
-    // TODO : consider pushing directly a binary
     // TODO : consider performance consequences of reallocating
     g.src.push_back(a);
     g.count.push_back(1);
@@ -51,6 +55,8 @@ ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const in
     edge_list.read((char *)&a,sizeof(int) );
     edge_list.read((char *)&b,sizeof(int) );
     // TODO : consider performance consequences of reallocating
+    g.src.resize(n);
+    g.count.resize(n);
     g.src.push_back(a);
     prev = a ;
     g.count.push_back(0);
@@ -101,14 +107,14 @@ void print_EC(EdgeCentric g){
 
 void print_EEC(ExtendedEdgeCentric& g){
     std::cout << "source : \n"  ;
-    //print_array(g.src) ;
+    print_array(g.src) ;
 
     std::cout << "count : \n"  ;
-    //print_array(g.count) ;
+    print_array(g.count) ;
 
     std::cout << "destination : \n"  ;
-    //print_array(g.dst) ;
+    print_array(g.dst) ;
 
     std::cout << "out degree : \n"  ;
-    //print_array(g.out_degree) ;
+    print_array(g.out_degree) ;
 }
