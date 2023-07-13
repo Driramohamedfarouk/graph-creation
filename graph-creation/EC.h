@@ -35,6 +35,8 @@ struct ExtendedEdgeCentric{
 EdgeCentric createGraphFromFile(const std::string& path);
 
 ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const int n);
+EdgeCentric createGraphFromFileBFS(const std::string& path,const int n);
+
 
 EdgeCentric parallelGraphCreation(const std::string& path);
 

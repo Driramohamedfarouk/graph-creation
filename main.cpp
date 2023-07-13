@@ -5,6 +5,8 @@
 #include "algorithms/PageRank.h"
 #include "utils/ConvertToBinary.h"
 #include "graph-creation/EC.h"
+#include "algorithms/parallel_bfs.h"
+
 
 void createGraphAndBinaryFromFile(const std::string& path,const std::string& out_path){
     std::vector<int> src;
@@ -93,17 +95,12 @@ void createGraphInParallelFromFile(const std::string& path){
 
 
 int main() {
-    //parallelPageRank("/home/farouk/CLionProjects/untitled/inputs/soc-LiveJournal1.txt",4847571,10) ;
-    const std::string path = "/home/farouk/CLionProjects/untitled/inputs/el.txt" ;
-    convertToBinary(path);
-    EdgeCentric g = parallelGraphCreation(path);
-    EdgeCentric h = createGraphFromFile(path) ;
-    //print_array(g.src) ;
-    std::cout << g.src.size() << " " << g.dst.size() << "\n" ;
-    std::cout << h.src.size() << " " << h.dst.size() << "\n" ;
-    print_EC(g);
-    print_EC(h);
-
+    const std::string path = "/home/farouk/CLionProjects/untitled/inputs/bn-1.8M-166M.edges" ;
+    //convertToBinary(path);
+    //parallelPageRank("/home/farouk/CLionProjects/untitled/inputs/bn-1.8M-166M.edges",1900000,10) ;
+    //EdgeCentric g = parallelGraphCreation(path);
     //convertToBinary("/home/farouk/CLionProjects/untitled/inputs/soc-LiveJournal1.txt");
+    convertToBinary("/home/farouk/CLionProjects/untitled/inputs/el.txt");
+    parallel_bfs("/home/farouk/CLionProjects/untitled/inputs/el.txt",0,5);
     return 0;
 }

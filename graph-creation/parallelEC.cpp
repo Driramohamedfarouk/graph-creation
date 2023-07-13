@@ -9,7 +9,7 @@
 #define NB_THREADS 8
 
 
-
+// TODO : do not assume that the os will give you all the threads you demanded
 EdgeCentric parallelGraphCreation(const std::string& path) {
 
     auto start = std::chrono::high_resolution_clock::now();

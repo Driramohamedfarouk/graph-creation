@@ -85,6 +85,12 @@ build CMakeFiles/gpf.dir/utils/ConvertToBinary.cpp.o: CXX_COMPILER__gpf_Debug /h
   OBJECT_DIR = CMakeFiles/gpf.dir
   OBJECT_FILE_DIR = CMakeFiles/gpf.dir/utils
 
+build CMakeFiles/gpf.dir/algorithms/parallel_bfs.cpp.o: CXX_COMPILER__gpf_Debug /home/farouk/CLionProjects/untitled/algorithms/parallel_bfs.cpp || cmake_object_order_depends_target_gpf
+  DEP_FILE = CMakeFiles/gpf.dir/algorithms/parallel_bfs.cpp.o.d
+  FLAGS = -fopenmp -g -fdiagnostics-color=always -std=gnu++1z
+  OBJECT_DIR = CMakeFiles/gpf.dir
+  OBJECT_FILE_DIR = CMakeFiles/gpf.dir/algorithms
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target gpf
@@ -93,7 +99,7 @@ build CMakeFiles/gpf.dir/utils/ConvertToBinary.cpp.o: CXX_COMPILER__gpf_Debug /h
 #############################################
 # Link the executable gpf
 
-build gpf: CXX_EXECUTABLE_LINKER__gpf_Debug CMakeFiles/gpf.dir/main.cpp.o CMakeFiles/gpf.dir/graph-creation/EC.cpp.o CMakeFiles/gpf.dir/utils/util.cpp.o CMakeFiles/gpf.dir/algorithms/PageRank.cpp.o CMakeFiles/gpf.dir/graph-creation/parallelEC.cpp.o CMakeFiles/gpf.dir/utils/ConvertToBinary.cpp.o
+build gpf: CXX_EXECUTABLE_LINKER__gpf_Debug CMakeFiles/gpf.dir/main.cpp.o CMakeFiles/gpf.dir/graph-creation/EC.cpp.o CMakeFiles/gpf.dir/utils/util.cpp.o CMakeFiles/gpf.dir/algorithms/PageRank.cpp.o CMakeFiles/gpf.dir/graph-creation/parallelEC.cpp.o CMakeFiles/gpf.dir/utils/ConvertToBinary.cpp.o CMakeFiles/gpf.dir/algorithms/parallel_bfs.cpp.o
   FLAGS = -fopenmp -g
   OBJECT_DIR = CMakeFiles/gpf.dir
   POST_BUILD = :
