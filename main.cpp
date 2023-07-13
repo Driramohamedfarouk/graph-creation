@@ -1,57 +1,12 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
-#include <chrono>
+#include "utils/util.h"
+#include "algorithms/PageRank.h"
+#include "utils/ConvertToBinary.h"
+#include "graph-creation/EC.h"
+#include "algorithms/parallel_bfs.h"
 
-
-// TODO : transform to Template method
-void print_array(const std::vector<int>& v){
-    for(int i : v) {
-        std::cout << i << "  " ;
-    }
-    std::cout<< '\n' ;
-}
-
-void createGraphFromFile(const std::string& path){
-    std::vector<int> src;
-    std::vector<int> count;
-    std::vector<int> dst;
-
-    std::ifstream file(path);
-    int a,b ;
-    file >> a >> b ;
-    std::cout << a << " " << b << '\n' ;
-    // TODO : consider pushing directly a binary
-    // TODO : consider performance consequences of reallocating
-    src.push_back(a);
-    count.push_back(1);
-    dst.push_back(b);
-    while (file >> a >> b){
-        std::cout << a << " " << b << '\n' ;
-        // TODO : store prev variable better than accessing last element of the vector each time
-        // TODO : collect metadata of the graph in the pass and store them somewhere
-        if ( src.back()!=a )
-        {
-            src.push_back(a);
-            count.push_back(1);
-        }
-        else
-        {
-            count.back()++;
-        }
-
-        dst.push_back(b);
-    }
-    std::cout << "source : \n"  ;
-    print_array(src) ;
-
-    std::cout << "count : \n"  ;
-    print_array(count) ;
-
-    std::cout << "destination : \n"  ;
-    print_array(dst) ;
-
-}
 
 void createGraphAndBinaryFromFile(const std::string& path,const std::string& out_path){
     std::vector<int> src;
@@ -139,21 +94,13 @@ void createGraphInParallelFromFile(const std::string& path){
 }
 
 
-void openAndSeekEnd(const std::string& path){
-    std::ifstream file ;
-    file.open(path);
-    auto start = std::chrono::high_resolution_clock::now();
-    file.seekg(10e5,std::ios::beg);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
-
-    std::cout << duration.count() << '\n' ;
-}
-
-
-
 int main() {
-    createGraphFromFile("/home/farouk/CLionProjects/untitled/el.txt") ;
-    //openAndSeekEnd("/home/farouk/CLionProjects/untitled/el.txt") ;
+    const std::string path = "/home/farouk/CLionProjects/untitled/inputs/bn-1.8M-166M.edges" ;
+    //convertToBinary(path);
+    //parallelPageRank("/home/farouk/CLionProjects/untitled/inputs/bn-1.8M-166M.edges",1900000,10) ;
+    //EdgeCentric g = parallelGraphCreation(path);
+    //convertToBinary("/home/farouk/CLionProjects/untitled/inputs/soc-LiveJournal1.txt");
+    convertToBinary("/home/farouk/CLionProjects/untitled/inputs/el.txt");
+    parallel_bfs("/home/farouk/CLionProjects/untitled/inputs/el.txt",0,5);
     return 0;
 }
