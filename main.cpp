@@ -4,8 +4,7 @@
 #include "utils/util.h"
 #include "algorithms/PageRank.h"
 #include "utils/ConvertToBinary.h"
-#include "graph-creation/EC.h"
-#include "algorithms/parallel_bfs.h"
+#include "graph-creation/chainedEC.h"
 
 
 void createGraphAndBinaryFromFile(const std::string& path,const std::string& out_path){
@@ -95,12 +94,12 @@ void createGraphInParallelFromFile(const std::string& path){
 
 
 int main() {
-    const std::string path = "/home/farouk/CLionProjects/untitled/inputs/bn-1.8M-166M.edges" ;
+    const std::string path = "/home/farouk/CLionProjects/graph-creation/inputs/el_paper.txt" ;
     //convertToBinary(path);
     //parallelPageRank("/home/farouk/CLionProjects/untitled/inputs/bn-1.8M-166M.edges",1900000,10) ;
     //EdgeCentric g = parallelGraphCreation(path);
     //convertToBinary("/home/farouk/CLionProjects/untitled/inputs/soc-LiveJournal1.txt");
-    convertToBinary("/home/farouk/CLionProjects/untitled/inputs/el.txt");
-    parallel_bfs("/home/farouk/CLionProjects/untitled/inputs/el.txt",0,5);
+    convertToBinary(path);
+    createChainedEdgeCentric( path, 5);
     return 0;
 }
