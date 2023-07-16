@@ -5,6 +5,7 @@
 #include "algorithms/PageRank.h"
 #include "utils/ConvertToBinary.h"
 #include "graph-creation/EC.h"
+#include "algorithms/Sequential_sorted_BFS.h"
 
 void createGraphAndBinaryFromFile(const std::string& path,const std::string& out_path){
     std::vector<int> src;
@@ -94,16 +95,16 @@ void createGraphInParallelFromFile(const std::string& path){
 
 int main() {
     //parallelPageRank("/home/farouk/CLionProjects/untitled/inputs/soc-LiveJournal1.txt",4847571,10) ;
-    const std::string path = "/home/farouk/CLionProjects/untitled/inputs/el.txt" ;
+    const std::string path = "./el.txt" ;
     convertToBinary(path);
-    EdgeCentric g = parallelGraphCreation(path);
+   // EdgeCentric g = parallelGraphCreation(path);
     EdgeCentric h = createGraphFromFile(path) ;
     //print_array(g.src) ;
-    std::cout << g.src.size() << " " << g.dst.size() << "\n" ;
+   // std::cout << g.src.size() << " " << g.dst.size() << "\n" ;
     std::cout << h.src.size() << " " << h.dst.size() << "\n" ;
-    print_EC(g);
+   // print_EC(g);
     print_EC(h);
-
+    sequentialSortedBFS(h,0);
     //convertToBinary("/home/farouk/CLionProjects/untitled/inputs/soc-LiveJournal1.txt");
     return 0;
 }

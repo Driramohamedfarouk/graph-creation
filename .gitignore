@@ -1,2 +1,6 @@
 inputs
 PageRankOutput.txt
+a.out
+el.*
+.vscode
+.idea 
