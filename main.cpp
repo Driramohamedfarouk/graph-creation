@@ -6,6 +6,7 @@
 #include "utils/ConvertToBinary.h"
 #include "graph-creation/chainedEC.h"
 #include "algorithms/bfs.h"
+#include "graph-creation/EC.h"
 
 
 void createGraphAndBinaryFromFile(const std::string& path,const std::string& out_path){
@@ -102,6 +103,10 @@ int main() {
     //convertToBinary("/home/farouk/CLionProjects/untitled/inputs/soc-LiveJournal1.txt");
     //convertToBinary(path);
     //createChainedEdgeCentric( path, 4847571);
-    bfs(path,0,4847571);
+    //bfs(path,0,4847571);
+    //parallelPageRank(path,4847571,10) ;
+    //SplitConvertToBinary(path);
+    //createGraphFromFilePageRank(path, 4847571);
+    parallelPageRank(path,4847571,10);
     return 0;
 }

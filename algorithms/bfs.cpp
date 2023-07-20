@@ -19,6 +19,7 @@ void bfs(const std::string& path, int src, int n ) {
     std::vector<int> frontier, next_frontier;
     frontier.push_back(src);
     while (!frontier.empty()) {
+        // std::cout << frontier.size() << '\n' ;
         for (int v : frontier) {
             // go through all neighbours
             int start = g.indexing[v] ;

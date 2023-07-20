@@ -49,11 +49,10 @@ EdgeCentric createGraphFromFile(const std::string& path){
 ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const int n){
     auto start = std::chrono::high_resolution_clock::now();
     ExtendedEdgeCentric g ;
-    g.out_degree.resize(n,0);
-    std::ifstream edge_list(path+".bin");
-    int a,b , prev ;
+    g.out_degree = new int[n];
+    std::ifstream edge_list(path+".src.bin");
+    int a, prev ;
     edge_list.read((char *)&a,sizeof(int) );
-    edge_list.read((char *)&b,sizeof(int) );
     // TODO : consider performance consequences of reallocating
     g.src.resize(n);
     g.count.resize(n);
@@ -66,25 +65,17 @@ ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const in
     long nb_edges ;
     std::ifstream conf(path+".conf");
     conf >> nb_edges ;
-    g.dst.resize(nb_edges);
-    g.dst[0] = b ;
     for (int i = 1; i < nb_edges; ++i) {
         // TODO : collect metadata of the graph in the pass and store them somewhere
         edge_list.read((char *)&a,sizeof(int) );
-        edge_list.read((char *)&b,sizeof(int) );
         g.out_degree[a]++;
         if ( prev!=a )
         {
             prev = a ; 
             g.src.push_back(a);
-            g.count.push_back(g.count.back()+1);
+            g.count.push_back(g.count.back());
         }
-        else
-        {
-            g.count.back()++;
-        }
-
-        g.dst[i] = b ;
+        g.count.back()++;
     }
     g.count.push_back(g.count.back()+1);
     auto end = std::chrono::high_resolution_clock::now();
@@ -160,8 +151,8 @@ void print_EEC(ExtendedEdgeCentric& g){
     print_array(g.count) ;
 
     std::cout << "destination : \n"  ;
-    print_array(g.dst) ;
+    //print_array(g.dst) ;
 
     std::cout << "out degree : \n"  ;
-    print_array(g.out_degree) ;
+    //print_array(g.out_degree) ;
 }

@@ -55,7 +55,7 @@ ChainedEdgeCentric createChainedEdgeCentric(const std::string& path,const int n)
             // TODO : should consider a data structure that accesses last element directly
             last[prev] = g.src.size()-2;
             prev = a ;
-            g.src.emplace_back(-1 ,g.src.back().second+1);
+            g.src.emplace_back(-1 ,g.src.back().second);
             if(last[a] == -1){
                 g.indexing[a] = last[a] =  g.src.size()-2 ;
             } else {
@@ -63,18 +63,16 @@ ChainedEdgeCentric createChainedEdgeCentric(const std::string& path,const int n)
                 g.src[last[a]].first = g.src.size() -2 ;
             }
         }
-        else
-        {
-            g.src.back().second++;
-        }
+        g.src.back().second++;
         g.dst[i] = b ;
     }
     g.src.emplace_back(-1 ,g.src.back().second+1);
+    g.src.shrink_to_fit();
     delete [] last ;
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
     std::cout << "creating CEC in memory took : " << duration.count() << '\n' ;
-    //printCEC(g,n,nb_edges) ;
+    // printCEC(g,n,nb_edges) ;
     std::cout << g.src.size() << '\n' ;
     return g ;
 }

@@ -8,4 +8,7 @@
 
 void convertToBinary(const std::string& path);
 
+
+void SplitConvertToBinary(const std::string& path);
+
 #endif //GRAPH_PROCESSING_FRAMEWORK_CONVERTTOBINARY_H

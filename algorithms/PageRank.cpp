@@ -7,15 +7,46 @@
 #include <cstring>
 #include <fstream>
 #include <chrono>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
-void parallelPageRank(const std::string& path,const int n,const int nb_iteration){
+void parallelPageRank(const std::string& path, const int n, const int nb_iteration){
     // create edge centric format and an array of size n containing out_deg
     ExtendedEdgeCentric g ;
     g = createGraphFromFilePageRank(path,n);
 
+    int fd ;
+
+    fd = open((path+".dst.bin").c_str(),O_RDONLY) ;
+    if (fd == -1) {
+        perror ("open");
+        exit(1);
+    }
+
+    struct stat sb;
+
+    if (fstat (fd, &sb) == -1) {
+        perror ("fstat");
+        exit(1);
+    }
+
+    g.dst = static_cast<int *>(mmap(nullptr, sb.st_size, PROT_READ, MAP_SHARED, fd, 0));
+
+    if (g.dst == MAP_FAILED) {
+        perror ("mmap");
+        exit(1);
+    }
+    if (close (fd) == -1) {
+        perror ("close");
+        exit(1);
+    }
+
     // allocate two arrays of size n
     // one contains PR for previous iteration and one contains PR for current iteration
     std::cout << "loaded the graph in memory " << '\n' ;
+
     auto start = std::chrono::high_resolution_clock::now();
     double* arr1;
     arr1 = static_cast<double *>(malloc(n * sizeof(double)));
@@ -43,10 +74,10 @@ void parallelPageRank(const std::string& path,const int n,const int nb_iteration
             // verticies with outdgeree zero wel not be present in the EC
             previousPR[j] /= (double)g.out_degree[j];
         }
-
         // partition the source array
         // the performance of parallel pageRank depends on the partitioning of edges
         // for each source add the value of previous[source] to count[source] next destinations
+        // TODO : change the factor to a power of two and compare results
 #pragma omp parallel for schedule(dynamic,10)
         for (int j = 0; j < g.src.size() ; ++j) {
             // internal loop should not be done in parallel
@@ -74,16 +105,14 @@ void parallelPageRank(const std::string& path,const int n,const int nb_iteration
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
     std::cout << "calculating pageRank took : " << duration.count() << '\n' ;
-    std::ofstream out("/home/farouk/CLionProjects/untitled/PageRankOutput.txt");
+    std::ofstream out("/home/farouk/CLionProjects/graph-creation/inputs/PageRankOutput.txt");
     for (int j = 0; j < n; ++j) {
         out << PR[j]  ;
+        out << '\n' ;
     }
     out.close();
-    /*
-    delete PR ;
-    delete previousPR ;
-    delete arr1 ;
-    delete arr2 ;*/
+    delete [] PR ;
+    delete [] previousPR ;
 }
 
 
