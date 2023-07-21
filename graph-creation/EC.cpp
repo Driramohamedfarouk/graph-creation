@@ -51,15 +51,15 @@ ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const in
     ExtendedEdgeCentric g ;
     g.out_degree = new int[n]{0};
     std::ifstream edge_list(path+".src.bin");
-    int a, prev ;
+    int a , prev ;
     edge_list.read((char *)&a,sizeof(int) );
     // TODO : consider performance consequences of reallocating
+    g.src.reserve(n);
    /* g.src.resize(n);
     g.count.resize(n);*/
-    g.src.push_back(a);
+    g.src.emplace_back(a,0);
+    g.src.emplace_back(a,1);
     prev = a ;
-    g.count.push_back(0);
-    g.count.push_back(1);
     g.out_degree[a]++;
 
     int nb_edges ;
@@ -69,19 +69,23 @@ ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const in
         // TODO : collect metadata of the graph in the pass and store them somewhere
         edge_list.read((char *)&a,sizeof(int) );
         g.out_degree[a]++;
+        // TODO : is there a way to tell the compiler to leave prev in the register during the whole loop ?
         if ( prev!=a )
         {
-            prev = a ; 
-            g.src.push_back(a);
-            g.count.push_back(g.count.back());
+            g.src.back().first = a ;
+            prev = a ;
+            g.src.emplace_back(prev,g.src.back().second);
         }
-        g.count.back()++;
+        g.src.back().second++;
     }
-    g.count.push_back(g.count.back()+1);
+    //g.src.push_back(g.count.back()+1);
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
     std::cout << "creating EC took : "  << duration.count() << '\n' ;
-    print_EEC(g) ;
+    /*for (auto & i : g.src) {
+        std::cout << "(" << i.first << "," << i.second << ") " ;
+    }
+    std::cout << '\n' ;*/
     return g ;
 }
 
@@ -146,10 +150,10 @@ void print_EC(EdgeCentric g){
 
 void print_EEC(ExtendedEdgeCentric& g){
     std::cout << "source : \n"  ;
-    print_array(g.src) ;
+    //print_array(g.src) ;
 
     std::cout << "count : \n"  ;
-    print_array(g.count) ;
+    //print_array(g.count) ;
 
     std::cout << "destination : \n"  ;
     //print_array(g.dst) ;

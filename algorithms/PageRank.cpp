@@ -5,7 +5,6 @@
 #include "../graph-creation/EC.h"
 #include "PageRank.h"
 #include <cstring>
-#include <fstream>
 #include <chrono>
 #include <sys/mman.h>
 #include <fcntl.h>
@@ -78,8 +77,8 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
         for (int j = 0; j < g.src.size() ; ++j) {
             // internal loop should not be done in parallel
             // too much random access here
-            for (int k = g.count[j]; k < g.count[j+1] ; ++k) {
-                PR[dst[k]]+=previousPR[g.src[j]] ;
+            for (int k = g.src[j].second; k < g.src[j+1].second ; ++k) {
+                PR[dst[k]]+=previousPR[g.src[j].first] ;
             }
 
         }
@@ -89,12 +88,6 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
         for (int j = 0; j < n; ++j) {
             PR[j] = d*PR[j] + (1 -d)/(float)n ;
         }
-
-
-        for (int j = 0; j < n; ++j) {
-            std::cout << PR[j] << " " ;
-        }
-        std::cout << '\n' ;
 
         // previous = pageRank && reinitialize pageRank
         // pointer to previous now points to PR
@@ -106,12 +99,20 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
     std::cout << "calculating pageRank took : " << duration.count() << '\n' ;
-    std::ofstream out("/home/farouk/CLionProjects/graph-creation/inputs/PageRankOutput.txt");
-    for (int j = 0; j < n; ++j) {
-        out << previousPR[j]  ;
-        out << '\n' ;
+/*
+
+    for (int i = 0; i < n; ++i) {
+        std::cout << previousPR[i]  << ' ';
     }
-    out.close();
+    std::cout << '\n' ;
+*/
+
+//    std::ofstream out("/home/farouk/CLionProjects/graph-creation/inputs/PageRankOutput.txt");
+//    for (int j = 0; j < n; ++j) {
+//        out << previousPR[j]  ;
+//        out << '\n' ;
+//    }
+//    out.close();
     delete [] PR ;
     delete [] previousPR ;
 }

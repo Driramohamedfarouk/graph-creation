@@ -96,7 +96,7 @@ void createGraphInParallelFromFile(const std::string& path){
 
 
 int main() {
-    const std::string path = "/home/farouk/CLionProjects/graph-creation/inputs/el.txt" ;
+    const std::string path = "/home/farouk/CLionProjects/graph-creation/inputs/soc-LiveJournal1.txt" ;
     //convertToBinary(path);
     //parallelPageRank("/home/farouk/CLionProjects/untitled/inputs/bn-1.8M-166M.edges",1900000,10) ;
     //EdgeCentric g = parallelGraphCreation(path);
@@ -105,8 +105,8 @@ int main() {
     //createChainedEdgeCentric( path, 4847571);
     //bfs(path,0,4847571);
     //parallelPageRank(path,4847571,10) ;
-    SplitConvertToBinary(path);
+    //SplitConvertToBinary(path);
     //createGraphFromFilePageRank(path, 4847571);
-    parallelPageRank(path,5,100);
+    parallelPageRank(path,4847571,10);
     return 0;
 }

@@ -22,8 +22,7 @@ struct EdgeCentric{
  * and out degree is calculated
  * */
 struct ExtendedEdgeCentric{
-    std::vector<int> src;
-    std::vector<int> count;
+    std::vector<std::pair<int,int>> src;
     int* out_degree;
 };
 
