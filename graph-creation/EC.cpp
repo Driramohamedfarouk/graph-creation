@@ -54,14 +54,12 @@ ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const in
     int a , prev ;
     edge_list.read((char *)&a,sizeof(int) );
     // TODO : consider performance consequences of reallocating
-    g.src.reserve(n);
-   /* g.src.resize(n);
-    g.count.resize(n);*/
-    g.src.emplace_back(a,0);
-    g.src.emplace_back(a,1);
+    g.src.reserve(2*n+2);
+    g.src.push_back(0) ;
+    g.src.push_back(a) ;
+    g.src.push_back(1) ;
     prev = a ;
     g.out_degree[a]++;
-
     int nb_edges ;
     std::ifstream conf(path+".conf");
     conf >> nb_edges ;
@@ -72,16 +70,17 @@ ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const in
         // TODO : is there a way to tell the compiler to leave prev in the register during the whole loop ?
         if ( prev!=a )
         {
-            g.src.back().first = a ;
+            g.src.push_back(a);
+            g.src.push_back(g.src[g.src.size()-2]);
             prev = a ;
-            g.src.emplace_back(prev,g.src.back().second);
         }
-        g.src.back().second++;
+        g.src.back()++;
     }
     //g.src.push_back(g.count.back()+1);
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
     std::cout << "creating EC took : "  << duration.count() << '\n' ;
+    //print_array(g.src);
     /*for (auto & i : g.src) {
         std::cout << "(" << i.first << "," << i.second << ") " ;
     }

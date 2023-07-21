@@ -4,12 +4,10 @@
 #include <iostream>
 #include <chrono>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 
 
 void SplitConvertToBinary(const std::string& path){
-    // TODO : if defined benchmarking remove the first while loop
     auto start = std::chrono::high_resolution_clock::now();
     std::string line ;
     std::ifstream  el(path);
@@ -21,6 +19,7 @@ void SplitConvertToBinary(const std::string& path){
     iss >> a >> b  ;
     src_file.write((const char *)&a, sizeof(int));
     dst_file.write((const char *)&b, sizeof(int));
+    // TODO : change to sscanf(%d %d)
     while (el >> a >> b ){
         src_file.write((const char *)&a, sizeof(int));
         dst_file.write((const char *)&b, sizeof(int));

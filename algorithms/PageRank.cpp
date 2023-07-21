@@ -15,7 +15,13 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
 
     ExtendedEdgeCentric g ;
     g = createGraphFromFilePageRank(path,n);
+/*
+    for (int i = 0; i < n; ++i) {
+        std::cout << *(g.out_degree+i) << " " ;
+    }
+    std::cout << '\n' ;
 
+    */
     int fd ;
 
     fd = open((path+".dst.bin").c_str(),O_RDONLY) ;
@@ -73,12 +79,15 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
         // the performance of parallel pageRank depends on the partitioning of edges
         // for each source add the value of previous[source] to count[source] next destinations
         // TODO : change the factor to a power of two and compare results
+        //std::cout << g.src.size() << '\n' ;
         #pragma omp parallel for schedule(dynamic,10)
-        for (int j = 0; j < g.src.size() ; ++j) {
+        for (int j = 0; j < g.src.size()-2 ; j+=2) {
             // internal loop should not be done in parallel
             // too much random access here
-            for (int k = g.src[j].second; k < g.src[j+1].second ; ++k) {
-                PR[dst[k]]+=previousPR[g.src[j].first] ;
+            //std::cout << g.src[j+1] << '\n' ;
+
+            for (int k = g.src[j]; k < g.src[j+2] ; ++k) {
+                PR[dst[k]]+=previousPR[g.src[j+1]] ;
             }
 
         }
@@ -99,13 +108,11 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
     std::cout << "calculating pageRank took : " << duration.count() << '\n' ;
-/*
 
-    for (int i = 0; i < n; ++i) {
-        std::cout << previousPR[i]  << ' ';
-    }
-    std::cout << '\n' ;
-*/
+//    for (int i = 0; i < n; ++i) {
+//        std::cout << previousPR[i]  << ' ';
+//    }
+//    std::cout << '\n' ;
 
 //    std::ofstream out("/home/farouk/CLionProjects/graph-creation/inputs/PageRankOutput.txt");
 //    for (int j = 0; j < n; ++j) {
