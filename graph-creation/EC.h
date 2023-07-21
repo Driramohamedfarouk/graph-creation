@@ -24,7 +24,6 @@ struct EdgeCentric{
 struct ExtendedEdgeCentric{
     std::vector<int> src;
     std::vector<int> count;
-    int* dst;
     int* out_degree;
 };
 

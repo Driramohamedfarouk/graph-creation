@@ -49,20 +49,20 @@ EdgeCentric createGraphFromFile(const std::string& path){
 ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const int n){
     auto start = std::chrono::high_resolution_clock::now();
     ExtendedEdgeCentric g ;
-    g.out_degree = new int[n];
+    g.out_degree = new int[n]{0};
     std::ifstream edge_list(path+".src.bin");
     int a, prev ;
     edge_list.read((char *)&a,sizeof(int) );
     // TODO : consider performance consequences of reallocating
-    g.src.resize(n);
-    g.count.resize(n);
+   /* g.src.resize(n);
+    g.count.resize(n);*/
     g.src.push_back(a);
     prev = a ;
     g.count.push_back(0);
     g.count.push_back(1);
     g.out_degree[a]++;
 
-    long nb_edges ;
+    int nb_edges ;
     std::ifstream conf(path+".conf");
     conf >> nb_edges ;
     for (int i = 1; i < nb_edges; ++i) {
@@ -81,6 +81,7 @@ ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const in
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
     std::cout << "creating EC took : "  << duration.count() << '\n' ;
+    print_EEC(g) ;
     return g ;
 }
 
