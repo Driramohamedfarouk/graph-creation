@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 # added openMP
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
-#add_executable(ConvertToBinary utils/ConvertToBinary.cpp graph-creation/parallelEC.cpp)
-#add_executable(PageRank algorithms/PageRank.cpp)
-add_executable(gpf main.cpp graph-creation/EC.cpp utils/util.h utils/util.cpp algorithms/PageRank.h main.cpp algorithms/PageRank.cpp graph-creation/parallelEC.cpp utils/ConvertToBinary.cpp graph-creation/chainedEC.h graph-creation/chainedEC.cpp algorithms/bfs.cpp utils/SplitConvertToBinary.cpp)
+add_executable(ConvertToBinary utils/ConvertToBinary.h utils/ConvertToBinary.cpp  )
+add_executable(SplitConvertToBinary utils/SplitConvertToBinary.cpp )
+add_executable(PageRank algorithms/PageRank.cpp graph-creation/EC.h graph-creation/EC.cpp utils/util.h utils/util.cpp)
+add_executable(bfs algorithms/bfs.cpp graph-creation/chainedEC.h graph-creation/chainedEC.cpp utils/util.h utils/util.cpp )
+#add_executable(gpf main.cpp graph-creation/EC.cpp  graph-creation/parallelEC.cpp )

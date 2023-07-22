@@ -43,3 +43,20 @@ void bfs(const std::string& path, int src, int n ) {
     std::cout << "calculating bfs took : " << duration.count() << '\n' ;
     //print_array(lvl);
 };
+
+
+int main(int argc, char* argv[]) {
+
+    if (argc != 4) {
+        std::cerr << "Usage: " << argv[0] << " <filename> <src> <vertices> " << std::endl;
+        return 1;
+    }
+
+    const char* filename = argv[1];
+    const int src = atoi(argv[2]);
+    const int vertices = atoi(argv[3]);
+
+    bfs(filename,src,vertices);
+
+    return 0;
+}

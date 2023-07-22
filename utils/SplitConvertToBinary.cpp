@@ -31,3 +31,17 @@ void SplitConvertToBinary(const std::string& path){
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
     std::cout << "Conversion to binary took : " << duration.count() << '\n' ;
 }
+
+
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
+        return 1;
+    }
+
+    const char* filename = argv[1];
+
+    SplitConvertToBinary(filename) ;
+
+    return 0;
+}

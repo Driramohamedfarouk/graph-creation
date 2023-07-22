@@ -108,6 +108,6 @@ int main() {
     //SplitConvertToBinary(path);
     //createGraphFromFilePageRank(path, 4847571);
     //parallelPageRank(path,5,10);
-    parallelPageRank(path,4847571,10);
+    //parallelPageRank(path,4847571,10);
     return 0;
 }

@@ -1,3 +1,6 @@
-/home/farouk/CLionProjects/graph-creation/cmake-build-debug/CMakeFiles/gpf.dir
+/home/farouk/CLionProjects/graph-creation/cmake-build-debug/CMakeFiles/ConvertToBinary.dir
+/home/farouk/CLionProjects/graph-creation/cmake-build-debug/CMakeFiles/SplitConvertToBinary.dir
+/home/farouk/CLionProjects/graph-creation/cmake-build-debug/CMakeFiles/PageRank.dir
+/home/farouk/CLionProjects/graph-creation/cmake-build-debug/CMakeFiles/bfs.dir
 /home/farouk/CLionProjects/graph-creation/cmake-build-debug/CMakeFiles/edit_cache.dir
 /home/farouk/CLionProjects/graph-creation/cmake-build-debug/CMakeFiles/rebuild_cache.dir

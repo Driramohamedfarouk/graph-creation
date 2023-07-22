@@ -125,3 +125,18 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
 }
 
 
+int main(int argc, char* argv[]) {
+
+    if (argc != 4) {
+        std::cerr << "Usage: " << argv[0] << " <filename> <vertices> <nb_iterations> " << std::endl;
+        return 1;
+    }
+
+    const char* filename = argv[1];
+    const int vertices = atoi(argv[2]);
+    const int nb_iteration = atoi(argv[3]);
+
+    parallelPageRank(filename,vertices,nb_iteration) ;
+
+    return 0;
+}
