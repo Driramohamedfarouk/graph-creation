@@ -6,7 +6,6 @@
 #define UNTITLED_EC_H
 #include <iostream>
 #include <vector>
-#include "../utils/util.h"
 
 // add nb of edges and vertices to the struct
 // change values to &
@@ -26,6 +25,12 @@ struct ExtendedEdgeCentric{
     int* out_degree;
 };
 
+struct ExtendedPairEdgeCentric{
+    std::pair<int,int>* src;
+    int* out_degree;
+    int src_size;
+};
+
 
 
 
@@ -33,6 +38,11 @@ struct ExtendedEdgeCentric{
 EdgeCentric createGraphFromFile(const std::string& path);
 
 ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const int n);
+//ExtendedEdgeCentric BranchlessCreateGraphFromFilePageRank(const std::string& path,const int n,const int nb_edges);
+
+ExtendedPairEdgeCentric BranchlessCreateGraphFromFilePageRank(const std::string& path,const int n,const int nb_edges);
+
+
 EdgeCentric createGraphFromFileBFS(const std::string& path,const int n);
 
 

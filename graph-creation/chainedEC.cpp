@@ -4,7 +4,6 @@
 #include <fstream>
 #include <chrono>
 #include "chainedEC.h"
-#include "../utils/util.h"
 
 // TODO : a use of a data structure that is optimized for accesses last element
 //  probably a wrapper over  array that contains pointer to last element

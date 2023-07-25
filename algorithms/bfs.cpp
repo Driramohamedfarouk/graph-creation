@@ -3,7 +3,6 @@
 //
 #include <chrono>
 #include "../graph-creation/chainedEC.h"
-#include "../utils/util.h"
 #include "bfs.h"
 
 void bfs(const std::string& path, int src, int n ) {

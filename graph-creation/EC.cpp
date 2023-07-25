@@ -5,7 +5,6 @@
 #include <fstream>
 #include <chrono>
 #include <sstream>
-#include "../utils/util.h"
 
 
 EdgeCentric createGraphFromFile(const std::string& path){
@@ -51,6 +50,11 @@ ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const in
     ExtendedEdgeCentric g ;
     g.out_degree = new int[n]{0};
     std::ifstream edge_list(path+".src.bin");
+    // TODO : get number edges from edge_list size
+    int nb_edges ;
+    std::ifstream conf(path+".conf");
+    conf >> nb_edges ;
+
     int a , prev ;
     edge_list.read((char *)&a,sizeof(int) );
     // TODO : consider performance consequences of reallocating
@@ -60,9 +64,6 @@ ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const in
     g.src.push_back(1) ;
     prev = a ;
     g.out_degree[a]++;
-    int nb_edges ;
-    std::ifstream conf(path+".conf");
-    conf >> nb_edges ;
     for (int i = 1; i < nb_edges; ++i) {
         // TODO : collect metadata of the graph in the pass and store them somewhere
         edge_list.read((char *)&a,sizeof(int) );
@@ -85,6 +86,59 @@ ExtendedEdgeCentric createGraphFromFilePageRank(const std::string& path,const in
         std::cout << "(" << i.first << "," << i.second << ") " ;
     }
     std::cout << '\n' ;*/
+    std::cout << " src size = " << g.src.size()/2 << "\n" ;
+    return g ;
+}
+
+
+
+
+ExtendedPairEdgeCentric BranchlessCreateGraphFromFilePageRank(const std::string& path,const int n,const int nb_edges){
+
+    auto start = std::chrono::high_resolution_clock::now();
+    ExtendedPairEdgeCentric g{} ;
+    g.out_degree = new int[n]{0};
+
+    std::ifstream edge_list(path+".src.bin");
+
+    std::ifstream conf(path+".conf");
+    conf >> g.src_size ;
+
+    g.src = new std::pair<int,int>[g.src_size] ;
+    int a , prev ;
+    edge_list.read((char *)&a,sizeof(int) );
+    g.src[0] = {a,0} ;
+    g.src[1] = {a,1} ;
+
+    prev = a ;
+    g.out_degree[a]++;
+
+    int currentIdx = 1 ;
+
+    for (int i = 1; i < nb_edges; i++) {
+        edge_list.read((char *)&a,sizeof(int) );
+        g.out_degree[a]++;
+        g.src[currentIdx] = {a,i};
+        currentIdx += prev != a;
+        prev = a ;
+    }
+    g.src[g.src_size-1] = {a,nb_edges};
+
+
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
+    std::cout << "creating EC took : "  << duration.count() << '\n' ;
+
+    /* for (int i = 0 ; i< g.src_size ; i++) {
+        std::cout << "(" << g.src[i].first << "," << g.src[i].second << ") " ;
+    }*/
+    //exit(0) ;
+
+    std::cout << '\n' ;
+    std::cout << "src size = " << g.src_size << "\n" ;
+    std::cout << "nb edges = " << nb_edges << "\n" ;
+
     return g ;
 }
 
@@ -132,31 +186,4 @@ EdgeCentric createGraphFromFileBFS(const std::string& path,const int n){
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
     std::cout << "creating EC took : "  << duration.count() << '\n' ;
     return g ;
-}
-
-
-
-void print_EC(EdgeCentric g){
-    std::cout << "source : \n"  ;
-    print_array(g.src) ;
-
-    std::cout << "count : \n"  ;
-    print_array(g.count) ;
-
-    std::cout << "destination : \n"  ;
-    print_array(g.dst) ;
-}
-
-void print_EEC(ExtendedEdgeCentric& g){
-    std::cout << "source : \n"  ;
-    //print_array(g.src) ;
-
-    std::cout << "count : \n"  ;
-    //print_array(g.count) ;
-
-    std::cout << "destination : \n"  ;
-    //print_array(g.dst) ;
-
-    std::cout << "out degree : \n"  ;
-    //print_array(g.out_degree) ;
 }
