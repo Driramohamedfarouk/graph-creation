@@ -18,7 +18,6 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
 
 
     int fd , nb_edges   ;
-
     fd = open((path+".dst.bin").c_str(),O_RDONLY) ;
     if (fd == -1) {
         perror ("open");
@@ -48,13 +47,13 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
         exit(1);
     }
 
-    // allocate two arrays of size n
-    // one contains PR for previous iteration and one contains PR for current iteration
     std::cout << "loaded the graph in memory " << '\n' ;
 
     auto start = std::chrono::high_resolution_clock::now();
 
-
+    // allocate two arrays of size n
+    // one contains PR for previous iteration
+    // and one contains PR for current iteration
     auto* previousPR = static_cast<double *>(malloc(n * sizeof(double)));
     auto* PR = static_cast<double *>(malloc(n * sizeof(double)));
     double* temp ;
@@ -70,36 +69,24 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
         // in a fully parallel manner update previous to previous[i] /= out_degree[i]
         #pragma omp parallel for
         for (int j = 0; j < n; ++j) {
-            // vertices with outrigger zero wel not be present in the EC
-            // no risk of division by zero
-            previousPR[j] = ( previousPR[j] / g.out_degree[j] ) ;
+            previousPR[j] /= g.out_degree[j]  ;
         }
 
-        // partition the source array
-        // the performance of parallel pageRank depends on the partitioning of edges
-        // for each source add the value of previous[source] to count[source] next destinations
-        // TODO : change the factor to a power of two and compare results
-        //std::cout << g.src.size() << '\n' ;
-        // TODO : control parallel read and write to PR
-        #pragma omp parallel for schedule(dynamic,16)
-        for (int j = 0; j < g.src_size-1 ; ++j) {
-            // internal loop should not be done in parallel
+        #pragma omp parallel for schedule(dynamic,256)
+        for (int j = 0; j < g.src_size ; ++j) {
             // too much random access here
             for (int k = g.src[j].second; k < g.src[j+1].second ; ++k) {
                 #pragma omp atomic
-                PR[dst[k]]+=previousPR[g.src[j].first] ;
+                PR[dst[k]]+= previousPR[g.src[j].first] ;
             }
         }
 
-        // multiply in a fully parallel manner pageRank vector by alpha and add 1-alpha to it
         #pragma omp parallel for
         for (int j = 0; j < n; ++j) {
             PR[j] = d*PR[j] + (1 -d)/(float)n ;
         }
 
-        // previous = pageRank && reinitialize pageRank
-        // pointer to previous now points to PR
-        // memset PR to all zeros
+       // swap PR and previousPR
         temp = previousPR ;
         previousPR = PR ;
         PR  =  temp ;
@@ -107,11 +94,7 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
     std::cout << "calculating pageRank took : " << duration.count() << '\n' ;
-//
-//    for (int i = 0; i < n; ++i) {
-//        std::cout << previousPR[i]  << ' ';
-//    }
-//    std::cout << '\n' ;
+
 
     std::ofstream out("/home/farouk/CLionProjects/graph-creation/inputs/PageRankOutput.txt");
     for (int j = 0; j < n; ++j) {
@@ -122,12 +105,13 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
 
     std::sort(previousPR,previousPR+n);
 
-    for (int i = n; i >n-10   ; i--) {
-        std::cout << previousPR[i] << ' ' ;
+    std::cout << "Top 10 vertices : \n" ;
+    for (int i = n-1; i >n-10   ; i--) {
+        std::cout << previousPR[i] << '\n' ;
     }
     std::cout << '\n' ;
 
-    std::cout << std::accumulate(previousPR,previousPR+n,0.0) << '\n';
+    std::cout << "sum of al PR = " << std::accumulate(previousPR,previousPR+n,0.0) << '\n';
 
 
     delete [] PR ;
