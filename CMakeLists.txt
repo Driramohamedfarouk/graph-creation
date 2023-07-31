@@ -13,4 +13,6 @@ add_executable(SplitConvertToBinary utils/SplitConvertToBinary.cpp )
 add_executable(PageRank algorithms/PageRank.cpp graph-creation/EC.h graph-creation/EC.cpp)
 #add_executable(bfs algorithms/bfs.cpp graph-creation/chainedEC.h graph-creation/chainedEC.cpp )
 
-add_executable(cec graph-creation/ChainedEC.h graph-creation/ChainedEC.cpp)
+#add_executable(cec graph-creation/ChainedEC.h graph-creation/ChainedEC.cpp)
+
+add_executable(OneStepNeighbour algorithms/OneStepNeighbour.cpp graph-creation/ChainedEC.cpp graph-creation/ChainedEC.h )

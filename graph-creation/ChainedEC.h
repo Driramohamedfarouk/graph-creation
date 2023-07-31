@@ -19,5 +19,6 @@ struct ChainedEdgeCentric{
     node_t* src ;
 };
 
+ChainedEdgeCentric createChainedEdgeCentric(const std::string& path, const int n, const int nb_edges);
 
 #endif //GRAPH_PROCESSING_FRAMEWORK_ICHAINEDEC_CPP_H
