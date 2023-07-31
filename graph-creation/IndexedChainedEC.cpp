@@ -8,15 +8,14 @@
 // TODO : a use of a data structure that is optimized for accesses last element
 //  probably a wrapper over  array that contains pointer to last element
 
-ChainedEdgeCentric createChainedEdgeCentric(const std::string& path,const int n){
+ChainedEdgeCentric createChainedEdgeCentric(const std::string& path,const int n, const int nb_edges){
     auto start = std::chrono::high_resolution_clock::now();
-    int nb_edges ;
+    int src_size ;
     std::ifstream conf(path+".conf");
-    conf >> nb_edges ;
+    conf >> src_size ;
 
     ChainedEdgeCentric g{} ;
     g.indexing = new int[n] ;
-    g.dst = new int[nb_edges] ;
 
     //g.src.resize(n);
 
@@ -34,20 +33,17 @@ ChainedEdgeCentric createChainedEdgeCentric(const std::string& path,const int n)
 
 
     std::ifstream edge_list(path+".bin");
-    int a,b , prev ;
+    int a , prev ;
     edge_list.read((char *)&a,sizeof(int) );
-    edge_list.read((char *)&b,sizeof(int) );
     prev = a ;
 
     g.indexing[a] = 0 ;
     // -1 plays the role of NULL in a linked list
     g.src.emplace_back(-1,0);
     g.src.emplace_back(-1,1);
-    g.dst[0] = b ;
 
     for (int i = 1; i < nb_edges; ++i) {
         edge_list.read((char *)&a,sizeof(int) );
-        edge_list.read((char *)&b,sizeof(int) );
         if ( prev!=a )
         {
             // src vector grows only in this if branch
@@ -63,7 +59,6 @@ ChainedEdgeCentric createChainedEdgeCentric(const std::string& path,const int n)
             }
         }
         g.src.back().second++;
-        g.dst[i] = b ;
     }
     g.src.emplace_back(-1 ,g.src.back().second+1);
     g.src.shrink_to_fit();
@@ -90,11 +85,4 @@ void printCEC(const ChainedEdgeCentric& g,const int n, const int m ) {
         std::cout << "(" << el.first << "," << el.second << ") " ;
     }
     std::cout << '\n' ;
-
-    std::cout << "destination  : \n"  ;
-    for (int i = 0; i < m ; ++i) {
-        std::cout << g.dst[i] << " " ;
-    }
-    std::cout << '\n' ;
-
 }
