@@ -10,7 +10,7 @@
 typedef struct node_t node_t;
 
 typedef struct node_t {
-    int count ;
+    int offset ;
     node_t *next ;
 } node_t ;
 

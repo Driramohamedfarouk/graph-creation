@@ -9,13 +9,12 @@
 
 ChainedEdgeCentric createChainedEdgeCentric(const std::string& path, const int n, const int nb_edges){
     auto start = std::chrono::high_resolution_clock::now();
-    int src_size , currentIdx = 0 , count= 1 ;
+    int src_size , currentIdx = 1 ;
 
     std::ifstream conf(path+".conf");
     conf >> src_size ;
 
     std::cout << src_size << '\n' ;
-    src_size-- ;
     ChainedEdgeCentric g{} ;
     g.indexing = (node_t*)  malloc(n* sizeof(node_t )) ;
     g.src = (node_t*)  malloc(src_size* sizeof(node_t )) ;
@@ -39,21 +38,18 @@ ChainedEdgeCentric createChainedEdgeCentric(const std::string& path, const int n
     edge_list.read((char *)&a,sizeof(int) );
     prev = a ;
 
-    g.indexing[a].next =last[a] = g.src ;
-    g.src[0] = node_t{1, nullptr} ;
+    g.indexing[a].next =last[a] = g.src+1 ;
+    g.src[0] = node_t{0, nullptr} ;
     //assert( *(last[0]) == g.indexing[0] ) ;
-    // g.src[1] = node_t{1, nullptr} ;
+    //g.src[1] = node_t{1, nullptr} ;
     for (int i = 1; i < nb_edges; ++i) {
         edge_list.read((char *)&a,sizeof(int) );
-        g.src[currentIdx] = node_t{count, nullptr} ;
-        //std::cout << currentIdx << "->" << count << '\n';
-        count *=  prev == a  ;
-        count++ ;
+        g.src[currentIdx] = node_t{i, nullptr} ;
         currentIdx += prev != a;
         prev = a ;
         last[a]  = (*last[a]).next = &g.src[currentIdx];
     }
-    g.src[currentIdx]= node_t{count, nullptr};
+    g.src[currentIdx]= node_t{nb_edges, nullptr};
 //    assert(currentIdx==src_size);
 //    std::cout << "\naddresses of src \n" ;
 //    for (int i = 0; i < src_size; ++i) {
@@ -67,7 +63,7 @@ ChainedEdgeCentric createChainedEdgeCentric(const std::string& path, const int n
 //    std::cout << '\n' ;
 //    std::cout << "g.src : \n" ;
 //    for (int i = 0; i < src_size; ++i) {
-//        std::cout <<'(' << g.src[i].count << ','<< g.src[i].next << ") " ;
+//        std::cout <<'(' << g.src[i].offset << ','<< g.src[i].next << ") " ;
 //    }
 //    std::cout << '\n' ;
 //    std::cout << "g.indexing.next : \n" ;
@@ -79,7 +75,7 @@ ChainedEdgeCentric createChainedEdgeCentric(const std::string& path, const int n
     delete [] last ;
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
-    std::cout << "creating CEC in memory took : " << duration.count() << '\n' ;
+    std::cout << "creating Chained CEC in memory took : " << duration.count() << '\n' ;
     //std::cout << currentIdx << '\n' ;
     return g ;
 }
@@ -89,7 +85,7 @@ void traverse(const std::string& path, const int n, const int nb_edges, const in
     ChainedEdgeCentric g = createChainedEdgeCentric(path,n , nb_edges) ;
     node_t* head = g.indexing[src].next ;
     while(head){
-        std::cout << head->count << ' ' ;
+        std::cout << head->offset << ' ' ;
         head = head->next ;
     }
     std::cout << '\n' ;
