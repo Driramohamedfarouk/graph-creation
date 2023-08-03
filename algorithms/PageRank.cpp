@@ -4,48 +4,19 @@
 #include <iostream>
 #include "../graph-creation/EC.h"
 #include "PageRank.h"
-#include <cstring>
 #include <chrono>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
 #include <algorithm>
 #include <fstream>
 #include <numeric>
+#include "../graph-creation/getDstFile.h"
 
 void parallelPageRank(const std::string& path, const int n, const int nb_iteration){
 
 
-    int fd , nb_edges   ;
-    fd = open((path+".dst.bin").c_str(),O_RDONLY) ;
-    if (fd == -1) {
-        perror ("open");
-        exit(1);
-    }
-
-    struct stat sb{};
-
-    if (fstat (fd, &sb) == -1) {
-        perror ("fstat");
-        exit(1);
-    }
-
-    nb_edges = sb.st_size/ sizeof(int) ;
+    auto x = getDstFile(path);
+    int *dst = x.first ,nb_edges = x.second ;
 
     ExtendedPairEdgeCentric g = BranchlessCreateGraphFromFilePageRank(path,n,nb_edges);
-
-    int *dst = static_cast<int *>(mmap(nullptr, sb.st_size, PROT_READ, MAP_SHARED, fd, 0));
-
-
-    if (dst == MAP_FAILED) {
-        perror ("mmap");
-        exit(1);
-    }
-    if (close (fd) == -1) {
-        perror ("close");
-        exit(1);
-    }
 
     std::cout << "loaded the graph in memory " << '\n' ;
 
@@ -61,23 +32,28 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
     // damping factor of pagerank
     const float d =0.85;
 
-    memset(previousPR,1.0f,n*sizeof(double ));
+    for (int i = 0; i < n; ++i) {
+        previousPR[i] = 1.0/n ;
+    }
 
     for (int i = 0; i < nb_iteration; ++i) {
-        memset(PR, 0, n*sizeof(double ));
+
+        for (int  j = 0; j < n; ++j) {
+            PR[j] = 0.0 ;
+        }
 
         // in a fully parallel manner update previous to previous[i] /= out_degree[i]
-        #pragma omp parallel for
-        for (int j = 0; j < n; ++j) {
-            previousPR[j] /= g.out_degree[j]  ;
-        }
+//        #pragma omp parallel for
+//        for (int j = 0; j < n; ++j) {
+//            previousPR[j] = (previousPR[j]!=0)* (previousPR[j]/g.out_degree[j])  ;
+//        }
 
         #pragma omp parallel for schedule(dynamic,256)
         for (int j = 0; j < g.src_size ; ++j) {
             // too much random access here
             for (int k = g.src[j].second; k < g.src[j+1].second ; ++k) {
                 #pragma omp atomic
-                PR[dst[k]]+= previousPR[g.src[j].first] ;
+                PR[dst[k]]+= previousPR[g.src[j].first]/g.out_degree[g.src[j].first] ;
             }
         }
 
