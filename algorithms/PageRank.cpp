@@ -40,6 +40,21 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
     auto* PR = static_cast<float *>(std::aligned_alloc(alignof(__m256),(n/8+1) * sizeof(__m256 )));
     float * temp ;
 
+    auto * inverse_out_degree = static_cast<float *>(malloc(n * sizeof(float )));
+    int i = 0;
+    for (; i < n-8; i+=8) {
+        __m256i out_deg_vec = _mm256_loadu_si256(reinterpret_cast<__m256i*>(&g.out_degree[i]));
+        __m256 out_deg_float_vec = _mm256_cvtepi32_ps(out_deg_vec);
+
+        __m256 reciprocal_vec = _mm256_rcp_ps(out_deg_float_vec);
+
+        _mm256_storeu_ps(&inverse_out_degree[i], reciprocal_vec);
+    }
+    for (; i < n; ++i) {
+        inverse_out_degree[i] = 1.0f / (float )g.out_degree[i] ;
+    }
+
+    delete [] g.out_degree ;
 
     const float y = 1.0f/(float )n ;
     const float z = y*(1-d) ;
@@ -50,6 +65,7 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
 
 
 //#pragma omp parallel for
+// TODO : schedule static
     int j = 0 ;
     for(; j < n - 8  ; j+=8) {
         _mm256_store_ps(previousPR+j, avx_y);
@@ -70,12 +86,22 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
         for (; m < n; ++m) {
             PR[m] = 0.0f ;
         }
-        // in a fully parallel manner update previous to previous[m] /= out_degree[m]
+        // in a fully parallel manner update previous to previous[m] /= inverse_out_degree[m]
         //#pragma omp parallel for
-        for (int s = 0; s < n; ++s) {
-            previousPR[s] = previousPR[s] /(float ) g.out_degree[s]  ;
+        int s = 0;
+        for (; s < n-8; s+=8) {
+            __m256 prevPR_vec = _mm256_loadu_ps(&previousPR[s]);
+            __m256 inv_out_deg_vec = _mm256_loadu_ps(&inverse_out_degree[s]);
+
+            __m256 result_vec = _mm256_mul_ps(prevPR_vec, inv_out_deg_vec);
+
+            _mm256_storeu_ps(&previousPR[s], result_vec);
+        }
+        for(;s<m;++s){
+            previousPR[s]*=inverse_out_degree[s];
         }
 
+        //TODO : microbenchmark using pair or vector of double size
         //#pragma grainsize 256
         #pragma omp parallel for schedule(dynamic,256)
         for (int l = 0; l < g.src_size ; ++l) {
