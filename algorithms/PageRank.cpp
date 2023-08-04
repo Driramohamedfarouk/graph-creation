@@ -40,21 +40,21 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
     auto* PR = static_cast<float *>(std::aligned_alloc(alignof(__m256),(n/8+1) * sizeof(__m256 )));
     float * temp ;
 
-    auto * inverse_out_degree = static_cast<float *>(malloc(n * sizeof(float )));
+    auto * inverse_out_degree = static_cast<float *>(_mm_malloc(n * sizeof(float ),32));
     int i = 0;
     for (; i < n-8; i+=8) {
-        __m256i out_deg_vec = _mm256_loadu_si256(reinterpret_cast<__m256i*>(&g.out_degree[i]));
+        __m256i out_deg_vec = _mm256_load_si256(reinterpret_cast<__m256i*>(&g.out_degree[i]));
         __m256 out_deg_float_vec = _mm256_cvtepi32_ps(out_deg_vec);
 
         __m256 reciprocal_vec = _mm256_rcp_ps(out_deg_float_vec);
 
-        _mm256_storeu_ps(&inverse_out_degree[i], reciprocal_vec);
+        _mm256_store_ps(&inverse_out_degree[i], reciprocal_vec);
     }
     for (; i < n; ++i) {
         inverse_out_degree[i] = 1.0f / (float )g.out_degree[i] ;
     }
 
-    delete [] g.out_degree ;
+    _mm_free(g.out_degree) ;
 
     const float y = 1.0f/(float )n ;
     const float z = y*(1-d) ;
@@ -126,6 +126,7 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
         previousPR = PR ;
         PR  =  temp ;
     }
+    _mm_free(inverse_out_degree);
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
     std::cout << "calculating pageRank took : " << duration.count() << '\n' ;

@@ -5,14 +5,18 @@
 #include <fstream>
 #include <chrono>
 #include <sstream>
-
+#include <immintrin.h>
 
 ExtendedPairEdgeCentric BranchlessCreateGraphFromFilePageRank(const std::string& path,const int n,const int nb_edges){
 
     auto start = std::chrono::high_resolution_clock::now();
 
     ExtendedPairEdgeCentric g{} ;
-    g.out_degree = new int[n]{0};
+    //g.out_degree = new int[n]{0};
+    g.out_degree = static_cast<int*>(_mm_malloc(n * sizeof(int), 32));
+    for (int i = 0; i < n ; ++i) {
+        g.out_degree[i]= 0 ;
+    }
 
     std::ifstream edge_list(path+".src.bin");
 
@@ -43,6 +47,12 @@ ExtendedPairEdgeCentric BranchlessCreateGraphFromFilePageRank(const std::string&
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
     std::cout << "creating EC took : "  << duration.count() << '\n' ;
 
+//    std::ofstream out("/home/farouk/CLionProjects/graph-creation/inputs/OutDegrees.txt");
+//    for (int j = 0; j < n; ++j) {
+//        out << g.out_degree[j]  ;
+//        out << '\n' ;
+//    }
+//    out.close();
 
     return g ;
 }
