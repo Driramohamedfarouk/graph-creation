@@ -10,11 +10,15 @@
 #include <numeric>
 #include "../graph-creation/getDstFile.h"
 #include <immintrin.h>
+#include <queue>
+
 #define GRAIN_SIZE 2048
 
 #define d 0.85f
 //#define cilk_for for
 
+
+void printTop10(const float *arr,int n);
 
 void parallelPageRank(const std::string& path, int n, const int nb_iteration){
 
@@ -141,19 +145,36 @@ void parallelPageRank(const std::string& path, int n, const int nb_iteration){
     }
     out.close();
 
-    std::sort(previousPR,previousPR+n);
-
-    std::cout << "Top 10 vertices : \n" ;
-    for (int i = n-1; i >n-10   ; i--) {
-        std::cout << previousPR[i] << '\n' ;
-    }
-    std::cout << '\n' ;
-
-    std::cout << "sum of al PR = " << std::accumulate(previousPR,previousPR+n,0.0) << '\n';
-
+    printTop10(previousPR,n);
 
     delete [] PR ;
     delete [] previousPR ;
+}
+
+void printTop10(const float *arr,int n){
+    std::priority_queue <float, std::vector<float>, std::greater<> > pq;
+    for(int i= 0 ;i < 10 ;++i){
+        pq.push(arr[i]);
+    }
+    for(int i= 10;i<n ;i++){
+        if(arr[i] > pq.top()){
+            pq.pop();pq.push(arr[i]);
+        }
+    }
+    std::cout << "Top 10 vertices : \n" ;
+    float top[10] ;
+    for(int i= 0 ;i < 10 ;++i){
+        top[9-i] = pq.top() ;
+        pq.pop();
+    }
+    for(float i : top){
+        std::cout << i << '\n' ;
+    }
+
+    std::cout << '\n' ;
+
+    std::cout << "sum of al PR = " << std::accumulate(arr, arr + n, 0.0) << '\n';
+
 }
 
 
