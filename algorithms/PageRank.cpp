@@ -10,37 +10,34 @@
 #include <numeric>
 #include "../graph-creation/getDstFile.h"
 #include <immintrin.h>
-
+#define GRAIN_SIZE 2048
 
 #define d 0.85f
 //#define cilk_for for
 
 
-void parallelPageRank(const std::string& path, const int n, const int nb_iteration){
+void parallelPageRank(const std::string& path, int n, const int nb_iteration){
 
 
     auto x = getDstFile(path);
     int *dst = x.first ,nb_edges = x.second ;
-
+    //int X_n = (n|7)+1 ;
+    n = (n|7)+1 ;
     ExtendedPairEdgeCentric g = BranchlessCreateGraphFromFilePageRank(path,n,nb_edges);
     std::cout << "loaded the graph in memory " << '\n' ;
 
 
-    // TODO : construct an float array of inverses of degrees
+    // TODO : vertices with zero out degree have no impact on the total page rank
+    //  consider adding some vertices to make the number multiple of 8
+    //const int r = n - (n & 7) ;
 
-
-    auto start = std::chrono::high_resolution_clock::now();
-
-    const int r = n - (n & 7) ;
-    auto* previousPR = static_cast<float *>(std::aligned_alloc(alignof(__m256),(n/8+1) * sizeof(__m256 )));
-    auto* PR = static_cast<float *>(std::aligned_alloc(alignof(__m256),(n/8+1) * sizeof(__m256 )));
-    float * temp ;
+    auto start_out_degree = std::chrono::high_resolution_clock::now();
 
     auto * inverse_out_degree = static_cast<float *>(_mm_malloc(n * sizeof(float ),32));
 
     // TODO : probably precomputing inverses of PR won't improve performance => micro-benchmark
-    #pragma omp parallel for schedule(static,256)
-    for (int i = 0; i <= n-8; i+=8) {
+    #pragma omp parallel for schedule(static,GRAIN_SIZE)
+    for (int i = 0; i < n; i+=8) {
         __m256i out_deg_vec = _mm256_load_si256(reinterpret_cast<__m256i*>(&g.out_degree[i]));
         __m256 out_deg_float_vec = _mm256_cvtepi32_ps(out_deg_vec);
 
@@ -48,11 +45,22 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
 
         _mm256_store_ps(&inverse_out_degree[i], reciprocal_vec);
     }
-    for (int i = r; i < n; ++i) {
-        inverse_out_degree[i] = 1.0f / (float )g.out_degree[i] ;
-    }
+//    for (int i = r; i < n; ++i) {
+//        inverse_out_degree[i] = 1.0f / (float )g.out_degree[i] ;
+//    }
 
     _mm_free(g.out_degree) ;
+
+    auto end_out_degree = std::chrono::high_resolution_clock::now();
+    auto duration_out_degree = std::chrono::duration_cast<std::chrono::microseconds>(end_out_degree- start_out_degree);
+    std::cout << "calculating out degree took : " << duration_out_degree.count() << '\n' ;
+
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    auto* previousPR = static_cast<float *>(std::aligned_alloc(alignof(__m256),(n>>3) * sizeof(__m256 )));
+    auto* PR = static_cast<float *>(std::aligned_alloc(alignof(__m256),(n>>3) * sizeof(__m256 )));
+    float * temp ;
 
     const float y = 1.0f/(float )n ;
     const float z = y*(1-d) ;
@@ -65,21 +73,21 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
 //#pragma omp parallel for
 // TODO : schedule static
 
-    #pragma omp parallel for schedule(static,256)
-    for(int j = 0 ; j <= n - 8  ; j+=8) {
+    #pragma omp parallel for schedule(static,GRAIN_SIZE)
+    for(int j = 0 ; j < n  ; j+=8) {
         _mm256_store_ps(previousPR+j, avx_y);
     }
-    for (int j = r ; j < n; ++j) {
-        previousPR[j] = y ;
-    }
+//    for (int j = r ; j < n; ++j) {
+//        previousPR[j] = y ;
+//    }
     __m256 avx_zeroes = _mm256_set1_ps(0.0f) ;
 
     __m256 avx_d = _mm256_set1_ps(d);
 
     for (int i = 0; i < nb_iteration; ++i) {
 
-        #pragma omp parallel for schedule(static,256)
-        for (int s = 0; s <= n-8; s+=8) {
+        #pragma omp parallel for schedule(static,GRAIN_SIZE)
+        for (int s = 0; s < n; s+=8) {
             _mm256_store_ps(PR + s, avx_zeroes);
 
             __m256 prevPR_vec = _mm256_loadu_ps(&previousPR[s]);
@@ -89,30 +97,32 @@ void parallelPageRank(const std::string& path, const int n, const int nb_iterati
 
             _mm256_storeu_ps(&previousPR[s], result_vec);
         }
-        for(int s = r;s<n;++s){
-            PR[s] = 0.0f ;
-            previousPR[s]*=inverse_out_degree[s];
-        }
-
-        //TODO : microbenchmark using pair or vector of double size
-        #pragma omp parallel for schedule(dynamic,256)
+//        for(int s = r;s<n;++s){
+//            PR[s] = 0.0f ;
+//            previousPR[s]*=inverse_out_degree[s];
+//        }
+        float sourcePR ;
+        // TODO : microbenchmark using pair or vector of double size
+        //  try use hyper object
+        #pragma omp parallel for schedule(dynamic,256) private(sourcePR)
         for (int l = 0; l < g.src_size ; ++l) {
             // too much random access here
+            sourcePR = previousPR[g.src[l].first] ;
             for (int k = g.src[l].second; k < g.src[l + 1].second ; ++k) {
                 #pragma omp atomic
-                PR[dst[k]]+= previousPR[g.src[l].first] ;
+                PR[dst[k]]+= sourcePR ;
             }
         }
 
-        #pragma omp parallel for schedule(static,256)
-        for(int l = 0 ; l <= n-8; l+=8) {
+        #pragma omp parallel for schedule(static,GRAIN_SIZE)
+        for(int l = 0 ; l < n; l+=8) {
             __m256 avx_PR = _mm256_loadu_ps(&PR[l]);
             avx_PR = _mm256_fmadd_ps(avx_d,avx_PR,avx_z);
             _mm256_storeu_ps(&PR[l],avx_PR) ;
         }
-        for (int l = r ;l < n ; ++l) {
-            PR[l] = d * PR[l] + z ;
-        }
+//        for (int l = r ;l < n ; ++l) {
+//            PR[l] = d * PR[l] + z ;
+//        }
         // swap PR and previousPR
         temp = previousPR ;
         previousPR = PR ;

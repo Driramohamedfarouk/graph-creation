@@ -14,6 +14,7 @@ ExtendedPairEdgeCentric BranchlessCreateGraphFromFilePageRank(const std::string&
     ExtendedPairEdgeCentric g{} ;
     //g.out_degree = new int[n]{0};
     g.out_degree = static_cast<int*>(_mm_malloc(n * sizeof(int), 32));
+#pragma omp parallel for schedule (static,256)
     for (int i = 0; i < n ; ++i) {
         g.out_degree[i]= 0 ;
     }
