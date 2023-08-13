@@ -1,46 +1,105 @@
 //
 // Created by farouk on 17/07/23.
 //
-#include <chrono>
-#include "../graph-creation/chainedEC.h"
 #include "bfs.h"
 
+#include <chrono>
+#include <fstream>
+
+#include "../graph-creation/getDstFile.h"
+#include "../graph-creation/ChainedEC.h"
+
+
 void bfs(const std::string& path, int src, int n ) {
-    ChainedEdgeCentric g = createChainedEdgeCentric(path, n);
+    int* dst ,nb_edges ;
+    auto x = getDstFile(path) ;
+    dst = x.first ; nb_edges = x.second ;
+
+    ChainedEdgeCentric g = createChainedEdgeCentric(path, n,nb_edges);
     std::cout << "loaded the graph in memory " << '\n' ;
+
     auto start = std::chrono::high_resolution_clock::now();
-    std::vector<int> lvl;
-    lvl.resize(n, -1);
+    auto *lvl = new int[n];
+
+    #pragma omp parallel for
+    for (int i = 0; i < n; ++i) {
+        lvl[i] = -1 ;
+    }
+
+
+    int *degrees = new int[n] ;
+
     int current_lvl = 0;
+
+    node_t* head ;
     lvl[src] = 0;
     // initialize empty frontier and next frontier
     // TODO : consider better Data Structure that can be splitted efficiently
-    std::vector<int> frontier, next_frontier;
-    frontier.push_back(src);
-    while (!frontier.empty()) {
-        // std::cout << frontier.size() << '\n' ;
-        for (int v : frontier) {
-            // go through all neighbours
-            int start = g.indexing[v] ;
-            while (start!=-1){
-                for (int i = g.src[start].second; i <= g.src[start + 1].second; i++) {
-                    if (lvl[g.dst[i]] == -1){
-                        lvl[g.dst[i]] = current_lvl + 1;
-                        next_frontier.push_back(g.dst[i]);
+    int * frontier, *next_frontier;
+    frontier = new int[n] ;
+    next_frontier = new int[nb_edges] ;
+    frontier[0] = src ;
+    int frontierSize = 1 , d , sum ;
+    while (frontierSize>0) {
+        std::cout << "frontier size -> " << frontierSize << '\n' ;
+        current_lvl++;
+        // construct an array of frontier prefixed degrees
+        sum = 0 ;
+        for (int i = 0; i < frontierSize ; ++i) {
+            degrees[i] = sum ;
+            sum+=g.out_degree[frontier[i]] ;
+        }
+        int prev ;
+        #pragma omp parallel for schedule(dynamic,1024) private(prev,d,head)
+        for(int i =  0 ; i< frontierSize ;++i) {
+            head = g.indexing[frontier[i]].next ;
+            d = 0 ;
+            while (head){
+                for (int j = (head-1)->offset; j < head->offset; j++) {
+                    // replace this with CAS and can safely parallelize outer loop
+                    //std::cout << dst[j] << " -> " << lvl[dst[j]] << '\n' ;
+                    if (lvl[dst[j]]==-1){
+                        #pragma omp atomic capture
+                        {
+                            prev = lvl[dst[j]];
+                            lvl[dst[j]] = current_lvl ;
+                        }
+                        if(prev==-1)
+                            next_frontier[degrees[i] +d ] = dst[j] ;
+                    } else {
+                        next_frontier[degrees[i] + d] = -1;
                     }
+                    d++ ;
                 }
-                start = g.src[start].first ;
+                head= head->next ;
             }
         }
-        frontier = next_frontier;
-        next_frontier.clear();
-        next_frontier.shrink_to_fit();
-        current_lvl++;
+        // get rid of -1 values ;
+        int k = 0 ;
+        //std::cout << "sum - > " << sum << '\n' ;
+        // total number of degrees
+        for (int i = 0; i < sum ; ++i) {
+            if(next_frontier[i]!=-1) {
+                frontier[k++] = next_frontier[i] ;
+            }
+        }
+
+        frontierSize = k ;
     }
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
     std::cout << "calculating bfs took : " << duration.count() << '\n' ;
-    //print_array(lvl);
+
+
+
+    // TODO : define a class writer
+    std::ofstream out("/home/farouk/CLionProjects/graph-creation/inputs/BFSOutput.txt");
+    for (int j = 0; j < n; ++j) {
+        out << lvl[j]  ;
+        out << '\n' ;
+    }
+    out.close();
+
 };
 
 
