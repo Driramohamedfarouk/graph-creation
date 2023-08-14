@@ -1,23 +1,24 @@
 //
 // Created by farouk on 30/06/23.
 //
-#include <iostream>
-#include "../graph-creation/EC.h"
 #include "PageRank.h"
-#include <chrono>
+
 #include <algorithm>
+#include <chrono>
+#include <iostream>
 #include <fstream>
-#include <numeric>
-#include "../graph-creation/getDstFile.h"
 #include <immintrin.h>
+#include <numeric>
 #include <queue>
 
-#define GRAIN_SIZE 2048
+#include "../graph-creation/EC.h"
+#include "../graph-creation/getDstFile.h"
+#include "../utils/pv_vector.h"
 
 #define d 0.85f
-//#define cilk_for for
 
-
+// prints the biggest 10 elements in the array
+// used to print the 10 most important nodes in PageRank
 void printTop10(const float *arr,int n);
 
 void parallelPageRank(const std::string& path, int n, const int nb_iteration){
@@ -25,34 +26,18 @@ void parallelPageRank(const std::string& path, int n, const int nb_iteration){
 
     auto x = getDstFile(path);
     int *dst = x.first ,nb_edges = x.second ;
-    //int X_n = (n|7)+1 ;
-    n = (n|7)+1 ;
+
+
     ExtendedPairEdgeCentric g = BranchlessCreateGraphFromFilePageRank(path,n,nb_edges);
     std::cout << "loaded the graph in memory " << '\n' ;
 
 
-    // TODO : vertices with zero out degree have no impact on the total page rank
-    //  consider adding some vertices to make the number multiple of 8
-    //const int r = n - (n & 7) ;
-
     auto start_out_degree = std::chrono::high_resolution_clock::now();
 
-    auto * inverse_out_degree = static_cast<float *>(_mm_malloc(n * sizeof(float ),32));
 
     // TODO : probably precomputing inverses of PR won't improve performance => micro-benchmark
-    #pragma omp parallel for schedule(static,GRAIN_SIZE)
-    for (int i = 0; i < n; i+=8) {
-        __m256i out_deg_vec = _mm256_load_si256(reinterpret_cast<__m256i*>(&g.out_degree[i]));
-        __m256 out_deg_float_vec = _mm256_cvtepi32_ps(out_deg_vec);
-
-        __m256 reciprocal_vec = _mm256_rcp_ps(out_deg_float_vec);
-
-        _mm256_store_ps(&inverse_out_degree[i], reciprocal_vec);
-    }
-//    for (int i = r; i < n; ++i) {
-//        inverse_out_degree[i] = 1.0f / (float )g.out_degree[i] ;
-//    }
-
+    pv_vector<float> inverse_out_degree(n);
+    inverse_out_degree.inverse(g.out_degree);
     _mm_free(g.out_degree) ;
 
     auto end_out_degree = std::chrono::high_resolution_clock::now();
@@ -62,49 +47,23 @@ void parallelPageRank(const std::string& path, int n, const int nb_iteration){
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    auto* previousPR = static_cast<float *>(std::aligned_alloc(alignof(__m256),(n>>3) * sizeof(__m256 )));
-    auto* PR = static_cast<float *>(std::aligned_alloc(alignof(__m256),(n>>3) * sizeof(__m256 )));
-    float * temp ;
+
+
+    pv_vector<float> previousPR(n);
+    pv_vector<float> PR(n);
 
     const float y = 1.0f/(float )n ;
     const float z = y*(1-d) ;
 
-    __m256 avx_y = _mm256_set1_ps(y);
-
-    __m256 avx_z = _mm256_set1_ps(z);
-
-
-//#pragma omp parallel for
-// TODO : schedule static
-
-    #pragma omp parallel for schedule(static,GRAIN_SIZE)
-    for(int j = 0 ; j < n  ; j+=8) {
-        _mm256_store_ps(previousPR+j, avx_y);
-    }
-//    for (int j = r ; j < n; ++j) {
-//        previousPR[j] = y ;
-//    }
-    __m256 avx_zeroes = _mm256_set1_ps(0.0f) ;
-
-    __m256 avx_d = _mm256_set1_ps(d);
+    previousPR.fill(y);
 
     for (int i = 0; i < nb_iteration; ++i) {
 
-        #pragma omp parallel for schedule(static,GRAIN_SIZE)
-        for (int s = 0; s < n; s+=8) {
-            _mm256_store_ps(PR + s, avx_zeroes);
+        PR.fill(0.0f);
 
-            __m256 prevPR_vec = _mm256_loadu_ps(&previousPR[s]);
-            __m256 inv_out_deg_vec = _mm256_loadu_ps(&inverse_out_degree[s]);
+        previousPR *= inverse_out_degree ;
 
-            __m256 result_vec = _mm256_mul_ps(prevPR_vec, inv_out_deg_vec);
 
-            _mm256_storeu_ps(&previousPR[s], result_vec);
-        }
-//        for(int s = r;s<n;++s){
-//            PR[s] = 0.0f ;
-//            previousPR[s]*=inverse_out_degree[s];
-//        }
         float sourcePR ;
         // TODO : microbenchmark using pair or vector of double size
         //  try use hyper object
@@ -118,26 +77,16 @@ void parallelPageRank(const std::string& path, int n, const int nb_iteration){
             }
         }
 
-        #pragma omp parallel for schedule(static,GRAIN_SIZE)
-        for(int l = 0 ; l < n; l+=8) {
-            __m256 avx_PR = _mm256_loadu_ps(&PR[l]);
-            avx_PR = _mm256_fmadd_ps(avx_d,avx_PR,avx_z);
-            _mm256_storeu_ps(&PR[l],avx_PR) ;
-        }
-//        for (int l = r ;l < n ; ++l) {
-//            PR[l] = d * PR[l] + z ;
-//        }
-        // swap PR and previousPR
-        temp = previousPR ;
-        previousPR = PR ;
-        PR  =  temp ;
+        PR.mul_add(d,z);
+
+        pv_vector<float>::swap(PR,previousPR);
     }
-    _mm_free(inverse_out_degree);
+
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
     std::cout << "calculating pageRank took : " << duration.count() << '\n' ;
 
-
+    // TODO : define a writer class
     std::ofstream out("/home/farouk/CLionProjects/graph-creation/inputs/PageRankOutput.txt");
     for (int j = 0; j < n; ++j) {
         out << previousPR[j]  ;
@@ -145,10 +94,8 @@ void parallelPageRank(const std::string& path, int n, const int nb_iteration){
     }
     out.close();
 
-    printTop10(previousPR,n);
+    printTop10(previousPR.data(),n);
 
-    delete [] PR ;
-    delete [] previousPR ;
 }
 
 void printTop10(const float *arr,int n){
