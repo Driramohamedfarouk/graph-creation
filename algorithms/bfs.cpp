@@ -3,11 +3,11 @@
 //
 #include "bfs.h"
 
-#include <chrono>
 #include <fstream>
 
 #include "../graph-creation/getDstFile.h"
 #include "../graph-creation/ChainedEC.h"
+#include "../utils/timer.h"
 
 
 void bfs(const std::string& path, int src, int n ) {
@@ -18,7 +18,8 @@ void bfs(const std::string& path, int src, int n ) {
     ChainedEdgeCentric g = createChainedEdgeCentric(path, n,nb_edges);
     std::cout << "loaded the graph in memory " << '\n' ;
 
-    auto start = std::chrono::high_resolution_clock::now();
+    Timer timer ;
+    timer.Start();
     auto *lvl = new int[n];
 
     #pragma omp parallel for
@@ -56,8 +57,6 @@ void bfs(const std::string& path, int src, int n ) {
             d = 0 ;
             while (head){
                 for (int j = (head-1)->offset; j < head->offset; j++) {
-                    // replace this with CAS and can safely parallelize outer loop
-                    //std::cout << dst[j] << " -> " << lvl[dst[j]] << '\n' ;
                     if (lvl[dst[j]]==-1){
                         #pragma omp atomic capture
                         {
@@ -74,21 +73,15 @@ void bfs(const std::string& path, int src, int n ) {
                 head= head->next ;
             }
         }
-        // get rid of -1 values ;
-        int k = 0 ;
-        //std::cout << "sum - > " << sum << '\n' ;
-        // total number of degrees
+        frontierSize = 0 ;
         for (int i = 0; i < sum ; ++i) {
             if(next_frontier[i]!=-1) {
-                frontier[k++] = next_frontier[i] ;
+                frontier[frontierSize++] = next_frontier[i] ;
             }
         }
-
-        frontierSize = k ;
     }
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
-    std::cout << "calculating bfs took : " << duration.count() << '\n' ;
+    timer.Stop();
+    std::cout << "calculating bfs took : " << timer.Millisecs() << '\n' ;
 
 
 

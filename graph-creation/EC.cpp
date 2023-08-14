@@ -2,19 +2,23 @@
 // Created by farouk on 30/06/23.
 //
 #include "EC.h"
+
 #include <fstream>
-#include <chrono>
 #include <sstream>
 #include <immintrin.h>
 
+#include "../utils/timer.h"
+
 ExtendedPairEdgeCentric BranchlessCreateGraphFromFilePageRank(const std::string& path,const int n,const int nb_edges){
 
-    auto start = std::chrono::high_resolution_clock::now();
+    Timer timer ;
+    timer.Start();
 
     ExtendedPairEdgeCentric g{} ;
     //g.out_degree = new int[n]{0};
+    // TODO : transform this to a pv_vector<int>
     g.out_degree = static_cast<int*>(_mm_malloc(n * sizeof(int), 32));
-#pragma omp parallel for schedule (static,256)
+    #pragma omp parallel for schedule (static,256)
     for (int i = 0; i < n ; ++i) {
         g.out_degree[i]= 0 ;
     }
@@ -44,9 +48,8 @@ ExtendedPairEdgeCentric BranchlessCreateGraphFromFilePageRank(const std::string&
     }
     g.src[g.src_size-1] = {a,nb_edges};
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
-    std::cout << "creating EC took : "  << duration.count() << '\n' ;
+    timer.Stop();
+    std::cout << "creating EC took : "  << timer.Microsecs() << '\n' ;
 
 //    std::ofstream out("/home/farouk/CLionProjects/graph-creation/inputs/OutDegrees.txt");
 //    for (int j = 0; j < n; ++j) {

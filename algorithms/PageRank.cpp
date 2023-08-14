@@ -3,8 +3,6 @@
 //
 #include "PageRank.h"
 
-#include <algorithm>
-#include <chrono>
 #include <iostream>
 #include <fstream>
 #include <immintrin.h>
@@ -14,6 +12,7 @@
 #include "../graph-creation/EC.h"
 #include "../graph-creation/getDstFile.h"
 #include "../utils/pv_vector.h"
+#include "../utils/timer.h"
 
 #define d 0.85f
 
@@ -32,22 +31,19 @@ void parallelPageRank(const std::string& path, int n, const int nb_iteration){
     std::cout << "loaded the graph in memory " << '\n' ;
 
 
-    auto start_out_degree = std::chrono::high_resolution_clock::now();
-
+    Timer timer ;
+    timer.Start() ;
 
     // TODO : probably precomputing inverses of PR won't improve performance => micro-benchmark
     pv_vector<float> inverse_out_degree(n);
     inverse_out_degree.inverse(g.out_degree);
     _mm_free(g.out_degree) ;
 
-    auto end_out_degree = std::chrono::high_resolution_clock::now();
-    auto duration_out_degree = std::chrono::duration_cast<std::chrono::microseconds>(end_out_degree- start_out_degree);
-    std::cout << "calculating out degree took : " << duration_out_degree.count() << '\n' ;
+    timer.Stop();
+    std::cout << "calculating out degree took : " << timer.Microsecs() << '\n' ;
 
 
-    auto start = std::chrono::high_resolution_clock::now();
-
-
+    timer.Start();
 
     pv_vector<float> previousPR(n);
     pv_vector<float> PR(n);
@@ -82,9 +78,8 @@ void parallelPageRank(const std::string& path, int n, const int nb_iteration){
         pv_vector<float>::swap(PR,previousPR);
     }
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end- start);
-    std::cout << "calculating pageRank took : " << duration.count() << '\n' ;
+    timer.Stop();
+    std::cout << "calculating pageRank took : " << timer.Microsecs() << '\n' ;
 
     // TODO : define a writer class
     std::ofstream out("/home/farouk/CLionProjects/graph-creation/inputs/PageRankOutput.txt");
