@@ -1,4 +1,4 @@
 inputs
 cmake-build-debug
 a.out
-test
+test/*.txt
