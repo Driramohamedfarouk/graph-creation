@@ -3,9 +3,10 @@
 //
 #include "PageRank.h"
 
-#include <iostream>
-#include <fstream>
 #include <immintrin.h>
+
+#include <fstream>
+#include <iostream>
 #include <numeric>
 #include <queue>
 
@@ -13,6 +14,7 @@
 #include "../graph-creation/getDstFile.h"
 #include "../utils/pv_vector.h"
 #include "../utils/timer.h"
+#include "../utils/result_writer.h"
 
 #define d 0.85f
 
@@ -23,8 +25,7 @@ void printTop10(const float *arr,int n);
 void parallelPageRank(const std::string& path, int n, const int nb_iteration){
 
 
-    auto x = getDstFile(path);
-    int *dst = x.first ,nb_edges = x.second ;
+    auto [dst,nb_edges] = getDstFile(path);
 
 
     ExtendedPairEdgeCentric g = BranchlessCreateGraphFromFilePageRank(path,n,nb_edges);
@@ -55,39 +56,30 @@ void parallelPageRank(const std::string& path, int n, const int nb_iteration){
 
     for (int i = 0; i < nb_iteration; ++i) {
 
-        PR.fill(0.0f);
-
         previousPR *= inverse_out_degree ;
 
+        PR.fill(0.0f);
 
-        float sourcePR ;
+        float sourcePR;
         // TODO : microbenchmark using pair or vector of double size
         //  try use hyper object
-        #pragma omp parallel for schedule(dynamic,256) private(sourcePR)
-        for (int l = 0; l < g.src_size ; ++l) {
+        #pragma omp parallel for schedule(dynamic, 256) private(sourcePR)
+        for (int l = 0; l < g.src_size; ++l) {
             // too much random access here
-            sourcePR = previousPR[g.src[l].first] ;
-            for (int k = g.src[l].second; k < g.src[l + 1].second ; ++k) {
+            sourcePR = previousPR[g.src[l].first];
+            for (int k = g.src[l].second; k < g.src[l + 1].second; ++k) {
                 #pragma omp atomic
-                PR[dst[k]]+= sourcePR ;
+                PR[dst[k]] += sourcePR;
             }
         }
-
-        PR.mul_add(d,z);
-
+        PR.mul_add(d, z);
         pv_vector<float>::swap(PR,previousPR);
     }
 
     timer.Stop();
     std::cout << "calculating pageRank took : " << timer.Microsecs() << '\n' ;
 
-    // TODO : define a writer class
-    std::ofstream out("/home/farouk/CLionProjects/graph-creation/inputs/PageRankOutput.txt");
-    for (int j = 0; j < n; ++j) {
-        out << previousPR[j]  ;
-        out << '\n' ;
-    }
-    out.close();
+    Writer<float>::write("PageRankOutput.txt",previousPR.data(),n);
 
     printTop10(previousPR.data(),n);
 

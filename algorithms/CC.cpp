@@ -17,11 +17,11 @@
 
 
 #include <iostream>
-#include <fstream>
 
 #include "../graph-creation/getDstFile.h"
 #include "../graph-creation/EC.h"
 #include "../utils/timer.h"
+#include "../utils/result_writer.h"
 
 void link(int u , int v,int* parent){
     int p1 = parent[u] , p2 = parent[v] , h ,l ;
@@ -46,9 +46,7 @@ void compress(int v, int* parent){
 void connected_components(const char *path , int n){
 
     // construct the EC representation of the graph
-    auto x = getDstFile(path);
-    int *dst = x.first ,nb_edges = x.second ;
-
+    auto [dst,nb_edges] = getDstFile(path);
 
     ExtendedPairEdgeCentric g = BranchlessCreateGraphFromFilePageRank(path,n,nb_edges);
     std::cout << "loaded the graph in memory " << '\n' ;
@@ -81,13 +79,8 @@ void connected_components(const char *path , int n){
     timer.Stop() ;
     std::cout << "calculating connected components took " << timer.Microsecs() << '\n' ;
 
-    // TODO : define a writer class
-    std::ofstream out("/home/farouk/CLionProjects/graph-creation/inputs/CCOutput.txt");
-    for (int j = 0; j < n; ++j) {
-        out << parent[j]  ;
-        out << '\n' ;
-    }
-    out.close();
+    Writer<int>::write("CCOutput.txt",parent,n);
+
 }
 
 int main(int argc, char* argv[]) {

@@ -6,6 +6,7 @@
 
 #include "ChainedEC.h"
 #include "../../utils/timer.h"
+#include "../../utils/result_writer.h"
 
 
 void bfs(const std::string& path, int src, const  int n,const int nb_edges ) {
@@ -75,13 +76,7 @@ void bfs(const std::string& path, int src, const  int n,const int nb_edges ) {
     timer.Stop();
     std::cout << "calculating bfs took : " << timer.Millisecs() << '\n' ;
 
-    // TODO : define a class writer
-    std::ofstream out("/home/farouk/CLionProjects/graph-creation/inputs/BFSOutput.txt");
-    for (int j = 0; j < n; ++j) {
-        out << lvl[j]  ;
-        out << '\n' ;
-    }
-    out.close();
+    Writer<int>::write("BFSOutput.txt",lvl,n)  ;
 
 };
 

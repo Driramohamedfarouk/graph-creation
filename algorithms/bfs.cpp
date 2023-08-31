@@ -8,6 +8,7 @@
 #include "../graph-creation/getDstFile.h"
 #include "../graph-creation/ChainedEC.h"
 #include "../utils/timer.h"
+#include "../utils/result_writer.h"
 
 
 void bfs(const std::string& path, int src, int n ) {
@@ -83,15 +84,7 @@ void bfs(const std::string& path, int src, int n ) {
     timer.Stop();
     std::cout << "calculating bfs took : " << timer.Millisecs() << '\n' ;
 
-
-
-    // TODO : define a class writer
-    std::ofstream out("/home/farouk/CLionProjects/graph-creation/inputs/BFSOutput.txt");
-    for (int j = 0; j < n; ++j) {
-        out << lvl[j]  ;
-        out << '\n' ;
-    }
-    out.close();
+    Writer<int>::write("BFSOutput.txt",lvl,n)  ;
 
 };
 
