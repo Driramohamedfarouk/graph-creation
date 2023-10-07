@@ -7,7 +7,8 @@ We introduce a novel data structure to represent graphs in memory,
 easy to construct and that requires no preprocessing.
 
 ## Data structure description 
-![ok.png](..%2F..%2FDownloads%2Fok.png)
+![ok](https://github.com/Driramohamedfarouk/graph-processing-framework/assets/79766774/13f13977-e3e8-4149-88a5-081b45ecb06b)
+
 
 ## Algorithms implemented 
 ### bfs 
